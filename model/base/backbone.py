@@ -11,7 +11,9 @@ class Backbone(nn.Module):
         self.kernelSize = 3
         self.stride = 2
 
-        raise NotImplementedError("Backbone::__init__")
+        ConvModule1 = nn.Conv2d(self.imageChannel, 64*w, self.kernelSize, stride=self.stride)
+
+        # raise NotImplementedError("Backbone::__init__")
 
     def forward(self, x):
         """
@@ -23,4 +25,6 @@ class Backbone(nn.Module):
             feat3: (B, 512 * w * r, 20, 20)
         """
 
-        raise NotImplementedError("Backbone::forward")
+        feat0 = 
+
+        # raise NotImplementedError("Backbone::forward")
