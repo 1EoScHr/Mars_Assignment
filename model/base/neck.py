@@ -11,7 +11,7 @@ class Neck(nn.Module):
         self.kernelSize = 3
         self.stride = 2
 
-        raise NotImplementedError("Neck::__init__")
+        # raise NotImplementedError("Neck::__init__")
 
     def forward(self, feat1, feat2, feat3):
         """
@@ -25,4 +25,7 @@ class Neck(nn.Module):
             Y: (B, 512 * w, 40, 40)
             Z: (B, 512 * w * r, 20, 20)
         """
-        raise NotImplementedError("Neck::forward")
+
+        
+
+        # raise NotImplementedError("Neck::forward")
