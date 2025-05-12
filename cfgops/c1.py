@@ -14,8 +14,8 @@ def mcfg(tags):
     mcfg.testSplitName = "test" # DO NOT MODIFY
 
     # data setup
-    mcfg.imageDir = "/Mars_Assignment_Running/mar20/images"
-    mcfg.annotationDir = "/Mars_Assignment_Running/mar20/annotations"
+    mcfg.imageDir = "../Mars_Assignment_Running/mar20/images"
+    mcfg.annotationDir = "../Mars_Assignment_Running/mar20/annotations"
     mcfg.classList = ["A{}".format(x) for x in range(1, 21)] # DO NOT MODIFY
     mcfg.subsetMap = { # DO NOT MODIFY
         "train": "../Mars_Assignment_Running/mar20/splits/v5/train.txt",

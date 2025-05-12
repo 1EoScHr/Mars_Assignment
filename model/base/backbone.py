@@ -39,8 +39,6 @@ class Backbone(nn.Module):
     """
     def __init__(self, w, r, n):
 
-        import pdb; pdb.set_trace()
-
         super().__init__()
         self.imageChannel = 3
         self.kernelSize = 3

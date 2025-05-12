@@ -132,6 +132,58 @@ detial中的MaxPool2d层没有给定任何参数，但是查询nn.MaxPool2d的�
 5.11先到这里
 ***
 
-#### 
+#### Upsample
 
+发现Neck部分有两个上采样模块，并且作用都是让长、宽的分辨率增加一倍。  
+查询nn中的上采样方法，有两种：  
+> 一种是作为模块使用的nn.Upsample，就像Conv2d一样  
+> 另一种是作为函数式使用的nn.functional.interpolate，更灵活  
 
+因此沿袭上面的思路，还是要定义成一个个函数来使用更好，所以使用第二种来包装成函数。  
+
+#### 模块函数复用
+
+之前的模块都定义在**backbone.py**中，在这里依然要复用其中的函数。  
+使用`from xxx import xxx`，在后面会发现提示模块未找到，经查，发现这是因为python的包结构的问题，需要使用相对路径。由于已经有init模块，用相对路径即可。  
+
+#### 输出格式
+
+注释中的C、X、Y、Z在原理图中并没有明确的指出是哪几个，发现原图中只向**Head**模块输出了三个，可能是X、Y、Z？  
+再分析detial，有四个有名字的节点，是TopdowmLayer的1与2，以及BottomupLayer的0与1，对应一下形状，发现的确可以。  
+也就是说，C->TopdowmLayer2，X->TopdownLayer1，Y->BottomupLayer0，Z->BottomupLayer1。  
+
+由于依然没有运行到这里，所以具体的形式和Backbone一样依然未知。  
+
+#### 运行
+
+这次没有报后面编译error，反而是日志提示新模型被创建后，报了一个“*ValueError: Image file in subset not exists: /Mars_Assignment_Running/mar20/images/2490.jpg*”的值错误。  
+
+可是数据集中明明有2490的，也许是dl(dataloader)模块有问题，在出错误模块开头添加断点，进行pdb调试。  
+
+盯了一会，发现是低级错误，在**c1.py**中的*imageDir*定义时写成了绝对路径，所以在根目录找，肯定找不到。同样的，下一行的注释路径也写成了绝对路径，低级错误。  
+
+终于，再次运行，提示"*NotImplementedError: YoloModel::freezeBackbone*"，这是一个定义在**yolomodel.py**中的自定义错误，提示freezeBackbone模块没有完成。  
+
+### freezeBackbone
+
+通过调试功能，定位freezeBackbone，发现其是在**base.py**中的preEpochSetup函数中被使用的，并且是一对，分别是*freezeBackbone*和*unfreezeBackbone*，同时分配有一个布尔标志位：self.backboneFreezed，在freeze时为True，在unfreeze时为False。  
+
+以上是从代码结构进行的分析，但是preEpochSetup有什么用，是“提前批量数据建立”吗？freezeBackbone是暂时停止Backbone层的操作吗，如果是的话又为什么这么做？  
+这些问题在结构图中并没有过说明，需要自己去搜寻。  
+
+直接搜索preEpochSetup，可知其是一个社区的常用命名，一般用法如下：  
+> 更新学习率；重置统计数据；打乱数据集；打印日志；清空GPU缓存等  
+
+浏览preEpochSetup的代码，以及实时调试，其似乎实现了一个输入模型与要用到的一批数据，然后对数据内符合freezeBackbone标准的数据进行匹配，修改模型的freezeBackbone有关。这样看还是云里雾里，不明白这是什么意思。  
+
+搜索freezeBackbone，得到其作用：  
+> 用于冻结模型主干（backbone）参数的方法，这样在训练过程中，主干部分的权重不会更新，只训练其他部分（比如检测头）。这通常用于迁移学习，当希望利用预训练特征提取器时非常有用。  
+> 在 YOLOv8 中的作用是当主干网络（比如 CSPDarknet）已经在大数据集（如 COCO）上预训练好了，如果想用用自己的小数据集做 fine-tuning，冻结主干可以减少训练时间、减少过拟合、保持特征提取能力
+	> fine-tuning是指微调，是在已有模型的基础上进行少量训练以适应新需求的策略   
+
+可见freezeBackbone的作用更多的是利于后面的小样本增量学习、知识蒸馏的应用。  
+
+整合以上的信息，可以知道freeze与unfreeze的内部规律  
+
+5.12
+***
