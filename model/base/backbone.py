@@ -21,14 +21,19 @@ class SPPF(nn.Module):
     def __init__(self, c):
         super().__init__()
         self.maxpool = nn.MaxPool2d(kernel_size=5, stride=1, padding=2)
-        self.conv = ConvModule(1, 1, 0, c, c)
+        self.conv1 = ConvModule(1, 1, 0, c, c)
+        self.conv2 = ConvModule(1, 1, 0, 4 * c, c)
 
     def forward(self, x):
-        x1 = self.conv(x)
+
+        x1 = self.conv1(x)
         x2 = self.maxpool(x1)
         x3 = self.maxpool(x2)
         x4 = self.maxpool(x3)
-        return cat([x1, x2, x3, x4], dim = 1)
+        out = cat([x1, x2, x3, x4], dim = 1)
+        out = self.conv2(out)
+        
+        return out
 
 class DarknetBottleneck(nn.Module):
     def __init__(self, c):
@@ -99,8 +104,6 @@ class Backbone(nn.Module):
             feat3: (B, 512 * w * r, 20, 20)
         """
 
-        import pdb; pdb.set_trace()
-
         # Stem Layer
         stemLayer = self.conv1(x)
         
@@ -121,7 +124,7 @@ class Backbone(nn.Module):
         feat3 = self.csplayer4(feat3)
         feat3 = self.sppf(feat3)
 
-        return 
+        return feat0, feat1, feat2, feat3
 
         # raise NotImplementedError("Backbone::forward")
 

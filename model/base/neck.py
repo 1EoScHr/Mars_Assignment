@@ -4,7 +4,7 @@ import torch.nn as nn
 from .backbone import ConvModule, CSPLayer_2Conv
 
 def runUpsample(x):
-    return nn.interpolate(x, scale_factor=2, mode='bilinear', align_corners=False)
+    return nn.functional.interpolate(x, scale_factor=2, mode='bilinear', align_corners=False)
 
 class Neck(nn.Module):
     """
@@ -52,6 +52,6 @@ class Neck(nn.Module):
         bottomUplayer_1 = torch.cat([bottomUplayer_1, feat3], dim = 1)
         bottomUplayer_1 = self.csplayer_b1(bottomUplayer_1)
 
-        return 
+        return topDownlayer_2, topDownlayer_1, bottomUplayer_0, bottomUplayer_1
 
         # raise NotImplementedError("Neck::forward")

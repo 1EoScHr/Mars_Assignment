@@ -210,4 +210,48 @@ debug：
 + 初始化对父类时要用`super().__init__()`而不是`super.__init()`，细节问题  
 + 在初始化时，“nn.Conv2d(c_in, c_out, k, stride=s, padding=p)”报错，显示TypeError。搜索一番，意思是我输入的不是整数，有浮点数，不接受。于是通过pdb在这里打断点，然后依次打印，发现是*c_out*为浮点，是16.0。将其转换为int即可。  
 + 同样的，下一个nn.BatchNorm2d(c_out)也是同样的错误，所以干脆在开头就将其变为int类型。  
-+ 同样地，后面c_in也会出问题，所以也一样转为int
++ 同样地，后面c_in也会出问题，所以也一样转为int  
+
+#### 重构后运行
+
+这次十分顺利，到达了之前空着不知道返回值如何打包的地方。  
+观察报错信息为“_, feat1, feat2, feat3 = self.backbone.forward(x)  
+TypeError: cannot unpack non-iterable NoneType object
+”  
+
+也就是说要接收的是四个，直接四个一起返回即可，不用什么包装  
+> python默认支持多返回值，会打包成为一个元组  
+
+补全backbone与neck的输出后，继续运行，这次是自己实现的Upsample：“return nn.interpolate(x, scale_factor=2, mode='bilinear', align_corners=False)  
+AttributeError: module 'torch.nn' has no attribute 'interpolate'”  
+
+查找可得，也是因为细节问题：应用`nn.functional.interpolate`而不是`nn.interpolate`，修改细节即可。  
+
+### Debug例子
+
+喜闻乐见的debug时间。  
+报错信息为“RuntimeError: Given groups=1, weight of size [128, 384, 1, 1], expected input[16, 1152, 40, 40] to have 384 channels, but got 1152 channels  instead”  
+
+说明是有一个地方ConvModule输入不对劲。先在ConvModule的forward中设置断点，一直continue，果然后续也出现了这个问题。但是由于基本每个模块都会调用，不好定位，很容易跟丢。  
+
+所以采取另一种方式，也就是用print，在每一层的前向传播时打印预期输入与实际输入，这样在哪里出错就可以分析出来，于是在ConvModule实现：  
+![2](pictures/2.png)  
+
+但是依然有些太多了，既然Conv是一个基础模块，那么在高级模块打印呢？于是在CSPLayer中进行这个操作，再次输出：  
+![3](pictures/3.png)  
+这次就十分清晰了，在第五个CSPLayer不一致，是在neck部分的TopDownlayer2。  
+
+于是在此处设置断点，分析实际输入：  
+![3](pictures/4.png)  
+比理论大了三倍，那么是backbone的输出有问题。
+
+将断点移到backbone处，发现问题出在最后一层：  
+![3](pictures/5.png)  
+理论形状为256，但是实际上是1024，出了问题。处问题的是SPPF模块，对照，发现是漏了一个模块。粗心！  
+
+补全后继续运行，看到了令人安心的“NotImplementedError: DetectionLoss::\_\_call\_\_”  
+
+5.14的工作到此结束～  
+***  
+
+
