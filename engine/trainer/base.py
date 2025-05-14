@@ -69,9 +69,6 @@ class MarsBaseTrainer(object):
         return MarsLearningRateSchedulerFactory.initScheduler(self.mcfg, opt)
 
     def preEpochSetup(self, model, epoch):
-
-        import pdb; pdb.set_trace()
-
         if self.mcfg.backboneFreezeEpochs is not None:
             if epoch in self.mcfg.backboneFreezeEpochs:
                 model.freezeBackbone()
