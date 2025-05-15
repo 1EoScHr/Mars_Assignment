@@ -16,6 +16,19 @@ class TaskAlignedAssigner(nn.Module):
         alpha (float): The alpha parameter for the classification component of the task-aligned metric.
         beta (float): The beta parameter for the localization component of the task-aligned metric.
         eps (float): A small value to prevent division by zero.
+
+    一种用于目标检测的任务对齐分配器。
+
+    该类基于任务对齐度量将地面实况（gt）对象分配给锚点，
+    分类和定位信息。
+
+    属性：
+        topk（int）：要考虑的顶级候选人的数量。
+        num_classes（int）：对象类的数量。
+        alpha（float）：与任务一致的指标的分类组件的 alpha 参数。
+        beta（float）：任务对齐指标的本地化组件的 beta 参数。
+        eps（float）：一个小值，用于防止被零除。
+
     """
 
     def __init__(self, topk=13, num_classes=80, alpha=1.0, beta=6.0, eps=1e-9):

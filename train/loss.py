@@ -92,6 +92,9 @@ class DetectionLoss(object):
         targets shape:
             (?, 6)
         """
+
+        import pdb; pdb.set_trace()
+
         loss = torch.zeros(3, device=self.mcfg.device)  # box, cls, dfl
 
         batchSize = preds[0].shape[0]
@@ -108,6 +111,12 @@ class DetectionLoss(object):
         gtMask = gtBboxes.sum(2, keepdim=True).gt_(0.0)
 
         # raise NotImplementedError("DetectionLoss::__call__")
+        target_labels, target_bboxes, target_scores, fg_mask, target_gt_idx = self.assigner.forward(
+            predClassScores, predBoxDistribution, self.model.anchorPoints, gtLabels, gtBboxes, gtMask
+        )
+        loss[0], loss[2] = self.bboxLoss.forward(
+            preds, gtBboxes, self.model.anchorPoints, target_bboxes, target_scores, target_scores.sum(), fg_mask
+        )
 
         loss[0] *= self.mcfg.lossWeights[0]  # box
         loss[1] *= self.mcfg.lossWeights[1]  # cls

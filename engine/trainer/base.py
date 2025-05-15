@@ -88,9 +88,6 @@ class MarsBaseTrainer(object):
             images = images.to(self.mcfg.device)
             labels = labels.to(self.mcfg.device)
             optimizer.zero_grad()
-
-            import pdb; pdb.set_trace()
-
             output = model(images)
             stepLoss = loss(output, labels)
             stepLoss.backward()
