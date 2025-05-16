@@ -384,4 +384,33 @@ proj并没有太多解释，这是一个形如 [0, 1, 2, ..., reg_max - 1] 的�
 RuntimeError: shape mismatch: value tensor of shape [512, 16] cannot be broadcast to indexing result of shape [512]”  
 维度不匹配。  
 
+问大模型，连番追问到底是输入的问题还是函数的问题，其信誓旦旦的说输入没有问题，是这几个内部函数的预期假设什么的有错，让我改内部逻辑。但是我并不认为给的这些内置函数会错。  
+
+到forward的注释中看，“mask_gt (Tensor): shape(bs, n_max_boxes, 1)”
+，也就是预期最后一维是1，但是在pdb中看，“p mask_gt.shape
+torch.Size([16, 12, 8400])
+”，所以是因为输入不符合预期。所以大模型不可轻信！  
+
+所以问题是出在gtMask上。指出问题后，让大模型再分析：  
+> 现有的变量gtMask是一个掩码，筛选出哪些锚点落在了哪个GT内  
+> 函数的预期输入mask_gt是代表哪些GT是真实的，也就是区分有效框
+>> 关于gt，就是“Ground Truth”的缩写，中文一般叫做“真实标签”，在训练时为了方便预处理，会给样本设定一个最大GT框数，而真实样本不一定有那么多，多余的会用空框表示
+
+所以是不对的，这是一个输入语义误解导致的形状错误，应该使用`mask_gt = gt_bboxes.sum(-1, keepdim=True).gt(0)`来获取真实掩码  
+> 这个写法又为什么能得到有效GT？  
+> 首先sum会对每一个框的几个坐标求和，每个框对应一个值，然后用gt(0)来与0比较，看是否大于0。
+> 无效框四点是0，所以和是0，而有效框必然不是，所以有效是True，无效是False.  
+
+但是一看，这不正是给定的写法吗。又被带到沟里了。  
+
+又经过一番无用的追问，最后又是自己在源代码中看到了一丝端倪：  
++ pd_boxes的形状应该是(b, max_num_obj, 1, 4)，gt_boxes应该是(b, 1, h*w, 4)  
++ 但是pdb打印形状，gt_boxes.shape是torch.Size([512, 4])
+，pd_boxes.shape是torch.Size([512, 64])，而期望的最后一维都是4，所以可以确定是pd_boxes出问题了。  
+
+今天先到这里，最后，记录一下令人困惑的box与bbox：  
+> 实际上两个都是一个东西，但是一般用bbox来特指包围框。  
+
+5.16  
+***  
 
