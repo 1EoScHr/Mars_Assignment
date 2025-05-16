@@ -93,8 +93,6 @@ class DetectionLoss(object):
             (?, 6)
         """
 
-        import pdb; pdb.set_trace()
-
         loss = torch.zeros(3, device=self.mcfg.device)  # box, cls, dfl
 
         batchSize = preds[0].shape[0]
@@ -111,12 +109,17 @@ class DetectionLoss(object):
         gtMask = gtBboxes.sum(2, keepdim=True).gt_(0.0)
 
         # raise NotImplementedError("DetectionLoss::__call__")
+
         target_labels, target_bboxes, target_scores, fg_mask, target_gt_idx = self.assigner.forward(
             predClassScores, predBoxDistribution, self.model.anchorPoints, gtLabels, gtBboxes, gtMask
         )
         loss[0], loss[2] = self.bboxLoss.forward(
-            preds, gtBboxes, self.model.anchorPoints, target_bboxes, target_scores, target_scores.sum(), fg_mask
+            predBoxDistribution, bboxDecode(self.model.anchorPoints, predBoxDistribution, self.model.proj, False), self.model.anchorPoints, target_bboxes, target_scores, target_scores.sum(), fg_mask
         )
+        loss_cls = self.bce(predClassScores, target_scores)
+        loss_cls = loss_cls.sum(-1) # 在最后一个维度，也就是每一个锚点的每一类上求和
+        loss[1] = (loss_cls * fg_mask.float()).sum() / (fg_mask.sum().clamp(min = 1))
+
 
         loss[0] *= self.mcfg.lossWeights[0]  # box
         loss[1] *= self.mcfg.lossWeights[1]  # cls

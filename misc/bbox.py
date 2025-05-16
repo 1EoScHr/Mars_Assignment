@@ -78,6 +78,7 @@ def bbox2dist(anchor_points, bbox, reg_max):
 
 def bboxDecode(anchor_points, pred_dist, proj, xywh):
     """Decode predicted object bounding box coordinates from anchor points and distribution."""
+    """从锚点和分布解码预测的对象边界框坐标。"""
     b, a, c = pred_dist.shape  # batch, anchors, channels
     pred_dist = pred_dist.view(b, a, 4, c // 4).softmax(3).matmul(proj.type(pred_dist.dtype))
     return dist2bbox(pred_dist, anchor_points, xywh=xywh)
