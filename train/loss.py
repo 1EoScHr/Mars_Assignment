@@ -110,11 +110,12 @@ class DetectionLoss(object):
 
         # raise NotImplementedError("DetectionLoss::__call__")
 
+        pd_bboxes = bboxDecode(self.model.anchorPoints, predBoxDistribution, self.model.proj, False)
         target_labels, target_bboxes, target_scores, fg_mask, target_gt_idx = self.assigner.forward(
-            predClassScores, predBoxDistribution, self.model.anchorPoints, gtLabels, gtBboxes, gtMask
+            predClassScores, pd_bboxes, self.model.anchorPoints, gtLabels, gtBboxes, gtMask
         )
         loss[0], loss[2] = self.bboxLoss.forward(
-            predBoxDistribution, bboxDecode(self.model.anchorPoints, predBoxDistribution, self.model.proj, False), self.model.anchorPoints, target_bboxes, target_scores, target_scores.sum(), fg_mask
+            predBoxDistribution, pd_bboxes, self.model.anchorPoints, target_bboxes, target_scores, target_scores.sum(), fg_mask
         )
         loss_cls = self.bce(predClassScores, target_scores)
         loss_cls = loss_cls.sum(-1) # 在最后一个维度，也就是每一个锚点的每一类上求和
@@ -124,5 +125,9 @@ class DetectionLoss(object):
         loss[0] *= self.mcfg.lossWeights[0]  # box
         loss[1] *= self.mcfg.lossWeights[1]  # cls
         loss[2] *= self.mcfg.lossWeights[2]  # dfl
+
+        if torch.isnan(loss.sum()):
+            print("❗ NaN detected in loss! Skipping this batch.")
+            import pdb; pdb.set_trace()
 
         return loss.sum()
