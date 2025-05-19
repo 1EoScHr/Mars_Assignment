@@ -39,17 +39,19 @@ class BboxLoss(nn.Module):
         super().__init__()
         self.dfl_loss = DFLoss(reg_max) if reg_max > 1 else None
 
+        self.eps = 1e-9
+
     def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
         """IoU loss."""
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
         iouv = iou(pred_bboxes[fg_mask], target_bboxes[fg_mask], xywh=False, CIoU=True)
-        loss_iou = ((1.0 - iouv) * weight).sum() / target_scores_sum
+        loss_iou = ((1.0 - iouv) * weight).sum() / (target_scores_sum + self.eps)
 
         # DFL loss
         if self.dfl_loss:
             target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
             loss_dfl = self.dfl_loss(pred_dist[fg_mask].view(-1, self.dfl_loss.reg_max), target_ltrb[fg_mask]) * weight
-            loss_dfl = loss_dfl.sum() / target_scores_sum
+            loss_dfl = loss_dfl.sum() / (target_scores_sum + self.eps)
         else:
             loss_dfl = torch.tensor(0.0).to(pred_dist.device)
 
@@ -93,8 +95,6 @@ class DetectionLoss(object):
             (?, 6)
         """
 
-        import pdb; pdb.set_trace()
-
         loss = torch.zeros(3, device=self.mcfg.device)  # box, cls, dfl
 
         batchSize = preds[0].shape[0]
@@ -131,8 +131,9 @@ class DetectionLoss(object):
         loss[1] *= self.mcfg.lossWeights[1]  # cls
         loss[2] *= self.mcfg.lossWeights[2]  # dfl
 
+        # 自定义的NaN警报
         if torch.isnan(loss.sum()):
-            print("❗ NaN detected in loss! Skipping this batch.")
+            print("\n❗ NaN detected in loss! Skipping this batch.")
             import pdb; pdb.set_trace()
 
         return loss.sum()
