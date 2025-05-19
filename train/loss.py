@@ -93,6 +93,8 @@ class DetectionLoss(object):
             (?, 6)
         """
 
+        import pdb; pdb.set_trace()
+
         loss = torch.zeros(3, device=self.mcfg.device)  # box, cls, dfl
 
         batchSize = preds[0].shape[0]
@@ -110,9 +112,12 @@ class DetectionLoss(object):
 
         # raise NotImplementedError("DetectionLoss::__call__")
 
+        # 辛苦debug得到的，必要的数据处理！
         pd_bboxes = bboxDecode(self.model.anchorPoints, predBoxDistribution, self.model.proj, False)
+        pd_scores = torch.sigmoid(predClassScores)
+
         target_labels, target_bboxes, target_scores, fg_mask, target_gt_idx = self.assigner.forward(
-            predClassScores, pd_bboxes, self.model.anchorPoints, gtLabels, gtBboxes, gtMask
+            pd_scores, pd_bboxes, self.model.anchorPoints, gtLabels, gtBboxes, gtMask
         )
         loss[0], loss[2] = self.bboxLoss.forward(
             predBoxDistribution, pd_bboxes, self.model.anchorPoints, target_bboxes, target_scores, target_scores.sum(), fg_mask

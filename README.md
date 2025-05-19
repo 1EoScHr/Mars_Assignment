@@ -414,7 +414,7 @@ torch.Size([16, 12, 8400])
 > 实际上两个都是一个东西，但是一般用bbox来特指图片上真实包围框。  
 
 5.16  
-***  
+***
 
 回顾一下错误，是在iou输出的赋值对应不上，然后研究左值没问题，那么是右值不对；  
 右值是一个函数调用，函数实现是给定的，应该不会错，那么就只可能是自己给的函数参数不对；  
@@ -449,4 +449,81 @@ torch.Size([16, 12, 8400])
     print("Warning: NaN detected in loss!")
     exit(1)`  
 
-这种写法来捕捉出现nan的损失。  
+这种写法来捕捉出现nan的损失。    
+
+5.17  
+***
+
+运行后，却发现第一次计算损失就出现了NaN，说明问题还不小，并非是因为其他参数的设立不合理导致梯度崩溃，而是计算角度上一开始就出了问题。  
+
+在出错时，由于总损失是由三种损失加权之和，所以有可能是其中一种出了错，导致整个错误。所以调试打印三种loss：  
+![](pictures/9.png)  
+结果十分不好，三种都是含有NaN，说明问题更广泛，难道是`self.assigner.forward`这里就错了。  
+
+那么则在这个函数内部进行逐个形状比对来确定正确性。  
+输入部分的形状：  
+![](pictures/10.png)  
+与注释中的预期形状对比，是正确无误的。  
+
+输入部分的NaN：  
+![](pictures/15.png)  
+没有NaN。  
+
+输出部分的形状：  
+![](pictures/11.png)  
+仍然的，与注释相较，也是一致的。  
+
+那么既然形状无误，不妨再检查一下这里是否有出现NaN：  
+![](pictures/12.png)  
+发现**target_scores**这一张量全部是NaN，应该就是这里出了问题。  
+
+继续深入，发现**targrt_score**在函数中出现三次，也就是值改变了三次，只要捕捉这三次中错误的一步。  
+![](pictures/13.png)  
+是其与**norm_align_metric**这一变量相乘后异常的，而**norm_align_metric**这一变量又本身全时NaN。  
+
+继续追踪norm_align_metric又是怎样变成NaN的。  
+与其有关的变量有四个：  
++ align_metric  
++ pos_overlaps
++ pos_align_metrics
++ self.eps  
+
+打印其值：  
+![](pictures/14.png)  
+**align_metric**与**pos_align_metrics**是NaN，pos_align_metrics来自align_metric，其一方面是来自`mask_pos, align_metric, overlaps = self.get_pos_mask(`这一句，另一方面来自`align_metric *= mask_pos`的乘等于，打印发现mask_pos并非NaN，那么错误又再一次定位到了更前面的这个部分。  
+
+问题现在在**get_pos_mask**部分，在这个函数内部调试，**align_metric**仍然存在NaN，其形状为“torch.Size([16, 12, 8400])”，而共有108个NaN。  
+具体的问题又在**get_box_metrics**函数中，再打断点追溯。  
+
+终于追溯到了错误的起点：  
+**get_box_metrics**函数中有`align_metric = bbox_scores.pow(self.alpha) * overlaps.pow(self.beta)`，而错误就是在这里诞生。  
+NaN情况：  
+![](pictures/16.png)  
+形状情况：  
+![](pictures/17.png)  
+
+形状是吻合的。所以这里写成一个简单的表示：***A = 根号(B)+根号(O)***（打印了这个情况下self.alpha为0.5），那么问题的根本就确定了，一定是B与O中出现了负数导致无法开根，进而变成NaN。  
+
+这一点也可以在调试中确定：  
+![](pictures/18.png)  
+也就是**bbox_scores**的问题。  
+
+与其有关的语句是：`bbox_scores = torch.zeros([self.bs, self.n_max_boxes, na], dtype=pd_scores.dtype, device=pd_scores.device)`，` bbox_scores[mask_gt] = pd_scores[ind[0], :, ind[1]][mask_gt]`  
+
+这两句代码的作用：在目标分配 (assigner) 里的一步，将预测框（anchor）和 ground truth（真实框）进行匹配，然后获取得分。  
++ 首先初始化一个匹配得分矩阵，都初始化为0。  
++ 然后对齐batch与anchor的位置，然后用掩码选出真正的框的分数，赋值给bbox_scores。  
+
+所以这一句并不是创造出了负数，而是将pd_scores中原本就存在的负数赋值给。  
+可以通过`p pd_scores.min()`来确定是否真的含有负数，结果是“tensor(-6.9689)”。  
+
+那么pd_scores中的负数又是从何而来呢，再追溯回去，发现其产生在**DetectionLoss**类中。  
+具体的是**predClassScores**这个变量，结合大模型的回答，可以做出以下结论：  
++ predClassScores本身是是模型输出 logits。  
++ 由于BCE计算损失时要用到predClassScores，由于算法的原因，这个值应该是原始数据，即未经激活。  
++ 但是在其他地方要用到这个值时，必须得经过sigmoid激活，来投射为一个在0-1的分数。  
+
+> **logits**是神经网络最后一层的输出，是一个“原始数据”，还没有经过激活
+> 明明刚开始训练，为什么会有最后一层输出？**答**：模型刚开始训练，也存在有一个初始的神经网络超参数值，后续的训练就是在修改这些超参数，使其效果更好。  
+
+**因此**，这里的这个bug终于发现了源头，就只是缺少一个sigmoid激活。  
