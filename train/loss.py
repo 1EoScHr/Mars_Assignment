@@ -132,8 +132,9 @@ class DetectionLoss(object):
         loss[2] *= self.mcfg.lossWeights[2]  # dfl
 
         # 自定义的NaN警报
-        if torch.isnan(loss.sum()):
+        """if torch.isnan(loss.sum()):
             print("\n❗ NaN detected in loss! Skipping this batch.")
-            import pdb; pdb.set_trace()
+            import pdb; pdb.set_trace()"""
 
         return loss.sum()
+ 

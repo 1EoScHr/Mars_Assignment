@@ -24,9 +24,15 @@ def mcfg(tags):
         "small": "../Mars_Assignment_Running/mar20/splits/v5/small.txt",
     }
 
+    # debug引入更改
+    mcfg.paintImages = True
+    mcfg.lossWeights = (2.0, 1.0, 0.5)
+    mcfg.baseLearningRate = 0.0025
+    mcfg.minIou = 0.3
+
     if "full" in tags:
         mcfg.modelName = "base"
-        mcfg.maxEpoch = 200
+        mcfg.maxEpoch = 30
         mcfg.backboneFreezeEpochs = [x for x in range(0, 3)]
 
     if "teacher" in tags:
