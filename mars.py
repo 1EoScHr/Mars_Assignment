@@ -17,7 +17,6 @@ if __name__ == "__main__":
         elif arg == "-pipe":
             mode = "pipe"
 
-    import pdb; pdb.set_trace()
 
     MarsEngine(
         mode=mode,

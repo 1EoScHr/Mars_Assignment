@@ -26,14 +26,28 @@ def mcfg(tags):
 
     # debug引入更改
     mcfg.paintImages = True
-    mcfg.lossWeights = (2.0, 1.0, 0.5)
-    mcfg.baseLearningRate = 0.0025
-    mcfg.minIou = 0.3
+    
+    # 第一阶段
+    """ 
+    mcfg.baseLearningRate = 5e-3
+    mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
+    mcfg.optimizerMomentum = 0.9
+    mcfg.optimizerWeightDecay = 5e-4
+    """
+    # 第二阶段
+    """"""
+    mcfg.baseLearningRate = 5e-5
+    mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
+    mcfg.optimizerMomentum = 0.937
+    mcfg.optimizerWeightDecay = 5e-4
+    mcfg.talTopk = 25
+    mcfg.startEpoch = 151
+     
 
     if "full" in tags:
         mcfg.modelName = "base"
-        mcfg.maxEpoch = 30
-        mcfg.backboneFreezeEpochs = [x for x in range(0, 3)]
+        mcfg.maxEpoch = 200
+        mcfg.backboneFreezeEpochs = []#[x for x in range(0, 20)]
 
     if "teacher" in tags:
         mcfg.modelName = "base"
