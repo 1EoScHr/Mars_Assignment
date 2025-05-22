@@ -4,9 +4,9 @@ from config import mconfig
 
 def mcfg(tags):
     mcfg = mconfig.ModelConfig()
-    # projectRootDir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    # pretrainedFile = os.path.join(projectRootDir, "resources/pretrained/backbone", "backbone_{}.pth".format(mcfg.phase))
-    # mcfg.pretrainedBackboneUrl = "file://{}".format(pretrainedFile)
+    projectRootDir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    pretrainedFile = os.path.join(projectRootDir, "resources/pretrained/backbone", "backbone_{}.pth".format(mcfg.phase))
+    mcfg.pretrainedBackboneUrl = "file://{}".format(pretrainedFile)
 
     mcfg.phase = "nano" # DO NOT MODIFY
     mcfg.trainSplitName = "train" # DO NOT MODIFY
@@ -28,26 +28,26 @@ def mcfg(tags):
     mcfg.paintImages = True
     
     # 第一阶段
-    """ 
-    mcfg.baseLearningRate = 5e-3
+    """"""
+    mcfg.baseLearningRate = 1e-2
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.9
     mcfg.optimizerWeightDecay = 5e-4
-    """
+    
     # 第二阶段
-    """"""
-    mcfg.baseLearningRate = 5e-5
+    """
+    mcfg.baseLearningRate = 1e-3
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.937
-    mcfg.optimizerWeightDecay = 5e-4
-    mcfg.talTopk = 25
+    mcfg.optimizerWeightDecay = 1e-4
+    mcfg.talTopk = 20
     mcfg.startEpoch = 151
-     
+     """
 
     if "full" in tags:
         mcfg.modelName = "base"
-        mcfg.maxEpoch = 200
-        mcfg.backboneFreezeEpochs = []#[x for x in range(0, 20)]
+        mcfg.maxEpoch = 20
+        mcfg.backboneFreezeEpochs = [x for x in range(0, 5)]
 
     if "teacher" in tags:
         mcfg.modelName = "base"

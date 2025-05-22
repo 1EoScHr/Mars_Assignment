@@ -550,7 +550,7 @@ NaN情况如下图：
 
 结合这里是在计算iou损失，对精度的要求还是比较高的，所以使用第一种。  
 
-## 真正的训练
+## 真正的训练（失败）
 
 修改完毕后再次开跑，终于，都回来了:)  
 ![](pictures/21.png)  
@@ -644,5 +644,108 @@ NaN情况如下图：
 
 ## 预训练backbone
 
-发现在mcfg中有一个**self.pretrainedBackboneUrl**
+发现在mcfg中有一个**self.pretrainedBackboneUrl**的参数变量，这应该与加载预训练数据有关，并且在**c1.py**的开头有被注释掉的加载预训练文件的数据。  
 
+5.21  
+***
+
+根据代码中的路径，应该是要放在resources中。debug试一下，理想的路径是*resources/pretrained/backbone/backbone_nano.pth*，发现我下载的后缀是.pt，与.pth是一类吗？  
+
+查询得，这两类是一样的。所以建立对应路径、更改后缀就行。  
+
+继续运行一次，现在文件已经加载了，只剩下更改变量了。  
+
+但是发现这是个压缩包，全为二进制文件，无法直接阅读，也没法修改，这是为什么？  
+
+原来这些二进制文件是以python的字典存储的，得用python对其解码。  
+
+由于下载来的是一个完整模型，还需要用官方的包来解码。`pip install ultralytics`。  
+
+查看自己模型的一些key：  
+```
+(Pdb) p list(self.model.state_dict().keys())[:10]  
+
+['backbone.conv1.conv.0.weight', 'backbone.conv1.conv.0.bias', 'backbone.conv1.conv.1.weight', 'backbone.conv1.conv.1.bias', 'backbone.conv1.conv.1.running_mean', 'backbone.conv1.conv.1.running_var', 'backbone.conv1.conv.1.num_batches_tracked', 'backbone.conv2.conv.0.weight', 'backbone.conv2.conv.0.bias', 'backbone.conv2.conv.1.weight']
+```
+
+再查看预训练模型的：  
+```
+['model.0.conv.weight', 'model.0.bn.weight', 'model.0.bn.bias', 'model.0.bn.running_mean', 'model.0.bn.running_var', 'model.0.bn.num_batches_tracked', 'model.1.conv.weight', 'model.1.bn.weight', 'model.1.bn.bias', 'model.1.bn.running_mean']
+```
+
+我的似乎很乱，甚至做不到一一对应。原因可能是我手搓backbone和neck，命名不是按照图上的，所以导致很乱。  
+
+手动更改一下，再次运行：  
+```
+ ['backbone.l0.conv.0.weight', 'backbone.l0.conv.0.bias', 'backbone.l0.conv.1.weight', 'backbone.l0.conv.1.bias', 'backbone.l0.conv.1.running_mean', 'backbone.l0.conv.1.running_var', 'backbone.l0.conv.1.num_batches_tracked', 'backbone.l1.conv.0.weight', 'backbone.l1.conv.0.bias', 'backbone.l1.conv.1.weight']
+```
+勉强能对应的上，但是有的地方还不明晰，不太好做key的对应替换。  
+
+再次研究，似乎一开始就是不应该手搓的，同文件夹下有一个**components.py**，这里面有许多模块，也许应该用这些来写！  
+
+先将目前这版代码commit一下，备份着。然后用给定的模块写一下。  
+
+已经使用给定的模块重构了backbone与neck部分，现在的内部参数结构是：  
+```
+ ['backbone.l0.conv.weight', 'backbone.l0.bn.weight', 'backbone.l0.bn.bias', 'backbone.l0.bn.running_mean', 'backbone.l0.bn.running_var', 'backbone.l0.bn.num_batches_tracked', 'backbone.l1.conv.weight', 'backbone.l1.bn.weight', 'backbone.l1.bn.bias', 'backbone.l1.bn.running_mean']
+```
+已经基本对应上了。  
+
+接着是写转换的逻辑，一一对比，可以得出一个映射表，记录了之间的关系，将其作为转换函数的重要组成部分，在**fixpre.py**中。  
+
+完成后，运行，程序不会报错，说明官方backbone权重已经无误的导入到了模型中。然后训练，看看到底是因为我从0开始训练导致失败，还是因为某个逻辑不对。  
+
+这样训练了50轮，结果却依然是之前的全0，说明问题在于我写的代码！既然backbone与bcak已经重构，那么只可能是我的**loss.py**部分的问题。  
+
+## 真的真正训练
+
+前往[yolo的官方仓库](self.model.anchorStrides)，研究对比，果然，有很多地方都对应不上，错误点：  
++ predClassScores等处没有经过detach()，这个过程的作用是取消这一部分的反向传播，说明有这个计算过程的都是用于验证，不参与最后的计算。  
++ self.assigner.forward部分的参数有误，pd_bboxes不光是标注框自己，还要有用于缩放的anchorStrides；anc_points同样也得用anchorStrides  
++ 官方的cls损失的细节与我的实现并不一致，官方的考虑了背景损失，而我的实现仅仅专注于前景，为了求稳，我更改为了官方的实现  
++ target_scores.sum的值也有说法，最小为1，所以要用max函数限制一下。  
++ 在计算loss[0]与loss[2]时，要将target_bboxes除以self.model.anchorStrides，以符合某种尺度的变换。  
+
+一一对应，在我的失败代码之上，修改完毕。  
+
+然后从0开始跑个20轮，效果如何？  
+![](pictures/26.png)  
+![](pictures/27.png)  
+
+终于有个正经模型的样子了！基本每一步的损失都会下降，最后的结果也还可以！  
+
+大体没有问题了，那么继续增加训练轮数来扩大正确率。  
+
+到50轮时，效果如下：  
+![](pictures/28.png)  
+
+到100轮时，效果如下：
+![](pictures/29.png)  
+
+到150轮效果：  
+![](pictures/30.png)  
+
+200轮：  
+![](pictures/31.png)  
+
+这一轮到此结束，分析一下整体loss的趋势：  
+![](pictures/loss_curve2.png)  
+去掉飞速下降的前10轮：  
+![](pictures/loss_curve2_2.png)  
+最后是趋于稳定的。  
+
+因此暂且可以认为，第一个任务，完成！  
+
+# 二阶段：加载预训练模型
+
+## 基础
+
+已经在上面那里完成过了，现在是验证环节。  
+
+计划冻结5轮主干。  
+
+训练20轮后，在绘制结果时忽然进程被杀死，然后电脑死机，原因似乎是内存耗尽，那么以后就不在中间阶段绘制框，只评估就好。  
+
+前20轮的结果：  
+![](pictures/32.png)  
+同期相比，进展果然很大
