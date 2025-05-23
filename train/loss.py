@@ -114,31 +114,37 @@ class DetectionLoss(object):
 
         # 辛苦debug得到的，必要的数据处理！
         pd_bboxes = bboxDecode(self.model.anchorPoints, predBoxDistribution, self.model.proj, False)
-        pd_scores = predClassScores.detach().sigmoid() # detach()
+        pd_scores = predClassScores.detach().sigmoid()
         
         target_labels, target_bboxes, target_scores, fg_mask, target_gt_idx = self.assigner.forward(
             pd_scores, 
-            (pd_bboxes.detach() * self.model.anchorStrides).type(gtBboxes.dtype), # detach(), anchorStrides
-            self.model.anchorPoints * self.model.anchorStrides, # anchorStrides
+            (pd_bboxes.detach() * self.model.anchorStrides).type(gtBboxes.dtype),
+            self.model.anchorPoints * self.model.anchorStrides,
             gtLabels, 
             gtBboxes, 
             gtMask
         )
 
+        # 预防在teacher训练时出现全False导致报错
+        """"""
+        if fg_mask.sum() == 0:
+            print('\n JUMP dummy! \n')
+            return predClassScores.sum() * 0.0  # 仍在计算图上
+        
         # 为了修正，这里选用官方实现
         #loss_cls = self.bce(predClassScores, target_scores)
         #loss_cls = loss_cls.sum(-1) # 在最后一个维度，也就是每一个锚点的每一类上求和
         #loss[1] = (loss_cls * fg_mask.float()).sum() / (fg_mask.sum().clamp(min = 1))
         loss[1] = self.bce(predClassScores, target_scores.to(predClassScores.dtype)).sum() / max(target_scores.sum(), 1)
 
-        target_bboxes /= self.model.anchorStrides # /=
+        target_bboxes /= self.model.anchorStrides
         loss[0], loss[2] = self.bboxLoss.forward(
             predBoxDistribution, 
             pd_bboxes, 
             self.model.anchorPoints, 
             target_bboxes, 
             target_scores, 
-            max(target_scores.sum(), 1),  # max(xxx, 1)
+            max(target_scores.sum(), 1), 
             fg_mask
         )
         
@@ -147,10 +153,10 @@ class DetectionLoss(object):
         loss[2] *= self.mcfg.lossWeights[2]  # dfl
 
         # 自定义的NaN警报
-        """"""
+        """
         if torch.isnan(loss.sum()):
             print("\n❗ NaN detected in loss! Skipping this batch.")
             import pdb; pdb.set_trace()
-
+        """
         return loss.sum()
  

@@ -1,7 +1,7 @@
 import re
 import matplotlib.pyplot as plt
 
-log_text = """                                                                                                
+success_log_text = """                                                                                                
 [2025-05-22T21:15:10.708410|base.py:165] Caching best weights at epoch 10...
 Epoch 11/20: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=5.51]                                                  
 Epoch 11/20: 26it [00:02, 11.38it/s, validationLossPerBatch=4.87]                                   
@@ -439,7 +439,287 @@ Epoch 199/200: 26it [00:02, 11.36it/s, validationLossPerBatch=2.51]
 Epoch 200/200: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.73]                                                
 Epoch 200/200: 26it [00:02, 11.30it/s, validationLossPerBatch=2.51]                         
 """
+log_text = """
+Epoch 1/50: 184it [00:23,  7.96it/s, backboneFreezed=1, trainLossPerBatch=1.29e+3]                                                
+Epoch 1/50: 26it [00:02, 10.68it/s, validationLossPerBatch=13.2]                                    
+[2025-05-23T22:27:20.318169|base.py:165] Caching best weights at epoch 1...
+Epoch 2/50: 184it [00:21,  8.38it/s, backboneFreezed=1, trainLossPerBatch=8.66]                                                   
+Epoch 2/50: 26it [00:02, 11.43it/s, validationLossPerBatch=6.61]                                    
+[2025-05-23T22:27:44.604409|base.py:165] Caching best weights at epoch 2...
+Epoch 3/50: 184it [00:22,  8.35it/s, backboneFreezed=1, trainLossPerBatch=6.73]                                                   
+Epoch 3/50: 26it [00:02, 11.16it/s, validationLossPerBatch=5.49]                                    
+[2025-05-23T22:28:09.064637|base.py:165] Caching best weights at epoch 3...
+Epoch 4/50: 184it [00:21,  8.41it/s, backboneFreezed=1, trainLossPerBatch=6.09]                                                   
+Epoch 4/50: 26it [00:02, 11.57it/s, validationLossPerBatch=5.32]                                    
+[2025-05-23T22:28:33.268977|base.py:165] Caching best weights at epoch 4...
+Epoch 5/50: 184it [00:21,  8.39it/s, backboneFreezed=1, trainLossPerBatch=5.73]                                                   
+Epoch 5/50: 26it [00:02, 11.45it/s, validationLossPerBatch=5.3]                                     
+[2025-05-23T22:28:57.536759|base.py:165] Caching best weights at epoch 5...
+Epoch 6/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=6.03]                                                   
+Epoch 6/50: 26it [00:02, 11.52it/s, validationLossPerBatch=7.39]                                    
+Epoch 7/50: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=5.45]                                                   
+Epoch 7/50: 26it [00:02, 10.99it/s, validationLossPerBatch=5.38]                                    
+Epoch 8/50: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=5.18]                                                   
+Epoch 8/50: 26it [00:02, 11.45it/s, validationLossPerBatch=4.8]                                     
+[2025-05-23T22:30:49.303063|base.py:165] Caching best weights at epoch 8...
+Epoch 9/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=4.9]                                                    
+Epoch 9/50: 26it [00:02, 11.21it/s, validationLossPerBatch=4.35]                                    
+[2025-05-23T22:31:26.496554|base.py:165] Caching best weights at epoch 9...
+Epoch 10/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=4.81]                                                  
+Epoch 10/50: 26it [00:02, 10.76it/s, validationLossPerBatch=4.77]                                   
+Epoch 11/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=4.68]                                                  
+Epoch 11/50: 26it [00:02, 11.34it/s, validationLossPerBatch=4.71]                                   
+Epoch 12/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=4.57]                                                  
+Epoch 12/50: 26it [00:02, 11.38it/s, validationLossPerBatch=4.06]                                   
+[2025-05-23T22:33:18.244708|base.py:165] Caching best weights at epoch 12...
+Epoch 13/50: 184it [00:34,  5.31it/s, backboneFreezed=0, trainLossPerBatch=4.49]                                                  
+Epoch 13/50: 26it [00:02, 11.14it/s, validationLossPerBatch=4.34]                                   
+Epoch 14/50: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=4.44]                                                  
+Epoch 14/50: 26it [00:02, 11.08it/s, validationLossPerBatch=4.02]                                   
+[2025-05-23T22:34:32.582514|base.py:165] Caching best weights at epoch 14...
+Epoch 15/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=4.33]                                                  
+Epoch 15/50: 26it [00:02, 11.20it/s, validationLossPerBatch=3.8]                                    
+[2025-05-23T22:35:09.781330|base.py:165] Caching best weights at epoch 15...
+Epoch 16/50: 184it [00:34,  5.31it/s, backboneFreezed=0, trainLossPerBatch=4.21]                                                  
+Epoch 16/50: 26it [00:02, 11.55it/s, validationLossPerBatch=3.69]                                   
+[2025-05-23T22:35:46.746877|base.py:165] Caching best weights at epoch 16...
+Epoch 17/50: 184it [00:34,  5.31it/s, backboneFreezed=0, trainLossPerBatch=4.19]                                                  
+Epoch 17/50: 26it [00:02, 11.44it/s, validationLossPerBatch=3.98]                                   
+Epoch 18/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=4.08]                                                  
+Epoch 18/50: 26it [00:02, 10.97it/s, validationLossPerBatch=3.69]                                   
+Epoch 19/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=4.04]                                                  
+Epoch 19/50: 26it [00:02, 11.08it/s, validationLossPerBatch=3.55]                                   
+[2025-05-23T22:37:38.011927|base.py:165] Caching best weights at epoch 19...
+Epoch 20/50: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=3.96]                                                  
+Epoch 20/50: 26it [00:02, 11.41it/s, validationLossPerBatch=3.68]                                   
+Epoch 21/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=3.9]                                                   
+Epoch 21/50: 26it [00:02, 11.18it/s, validationLossPerBatch=3.47]                                   
+[2025-05-23T22:38:52.402143|base.py:165] Caching best weights at epoch 21...
+Epoch 22/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=3.86]                                                  
+Epoch 22/50: 26it [00:02, 11.42it/s, validationLossPerBatch=3.26]                                   
+[2025-05-23T22:39:29.475712|base.py:165] Caching best weights at epoch 22...
+Epoch 23/50: 184it [00:34,  5.31it/s, backboneFreezed=0, trainLossPerBatch=3.76]                                                  
+Epoch 23/50: 26it [00:02, 11.65it/s, validationLossPerBatch=3.31]                                   
+Epoch 24/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=3.7]                                                   
+Epoch 24/50: 26it [00:02, 11.46it/s, validationLossPerBatch=3.14]                                   
+[2025-05-23T22:40:43.492340|base.py:165] Caching best weights at epoch 24...
+Epoch 25/50: 184it [00:34,  5.31it/s, backboneFreezed=0, trainLossPerBatch=3.64]                                                  
+Epoch 25/50: 26it [00:02, 11.56it/s, validationLossPerBatch=3.15]                                   
+Epoch 26/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=3.6]                                                   
+Epoch 26/50: 26it [00:02, 11.10it/s, validationLossPerBatch=3.17]                                   
+Epoch 27/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.54]                                                  
+Epoch 27/50: 26it [00:02, 11.46it/s, validationLossPerBatch=3.09]                                   
+[2025-05-23T22:42:34.728973|base.py:165] Caching best weights at epoch 27...
+Epoch 28/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=3.49]                                                  
+Epoch 28/50: 26it [00:02, 11.13it/s, validationLossPerBatch=2.99]                                   
+[2025-05-23T22:43:11.874368|base.py:165] Caching best weights at epoch 28...
+Epoch 29/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.47]                                                  
+Epoch 29/50: 26it [00:02, 11.42it/s, validationLossPerBatch=3.05]                                   
+Epoch 30/50: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=3.39]                                                  
+Epoch 30/50: 26it [00:02, 11.73it/s, validationLossPerBatch=3.2]                                    
+Epoch 31/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.38]                                                  
+Epoch 31/50: 26it [00:02, 11.32it/s, validationLossPerBatch=3.05]                                   
+Epoch 32/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=3.37]                                                  
+Epoch 32/50: 26it [00:02, 11.07it/s, validationLossPerBatch=3.1]                                    
+Epoch 33/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.31]                                                  
+Epoch 33/50: 26it [00:02, 11.95it/s, validationLossPerBatch=2.86]                                   
+[2025-05-23T22:46:17.358026|base.py:165] Caching best weights at epoch 33...
+Epoch 34/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=3.26]                                                  
+Epoch 34/50: 26it [00:02, 11.42it/s, validationLossPerBatch=2.94]                                   
+Epoch 35/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.23]                                                  
+Epoch 35/50: 26it [00:02, 11.23it/s, validationLossPerBatch=2.91]                                   
+Epoch 36/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.23]                                                  
+Epoch 36/50: 26it [00:02, 10.91it/s, validationLossPerBatch=2.8]                                    
+[2025-05-23T22:48:08.963306|base.py:165] Caching best weights at epoch 36...
+Epoch 37/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=3.15]                                                  
+Epoch 37/50: 26it [00:02, 11.14it/s, validationLossPerBatch=2.8]                                    
+Epoch 38/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.14]                                                  
+Epoch 38/50: 26it [00:02, 11.12it/s, validationLossPerBatch=2.89]                                   
+Epoch 39/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.12]                                                  
+Epoch 39/50: 26it [00:02, 11.77it/s, validationLossPerBatch=2.77]                                   
+[2025-05-23T22:50:00.484359|base.py:165] Caching best weights at epoch 39...
+Epoch 40/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.08]                                                  
+Epoch 40/50: 26it [00:02, 11.00it/s, validationLossPerBatch=2.72]                                   
+[2025-05-23T22:50:37.671854|base.py:165] Caching best weights at epoch 40...
+Epoch 41/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=3.09]                                                  
+Epoch 41/50: 26it [00:02, 11.17it/s, validationLossPerBatch=2.68]                                   
+[2025-05-23T22:51:14.771919|base.py:165] Caching best weights at epoch 41...
+Epoch 42/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.04]                                                  
+Epoch 42/50: 26it [00:02, 11.10it/s, validationLossPerBatch=2.72]                                   
+Epoch 43/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=3.04]                                                  
+Epoch 43/50: 26it [00:02, 11.20it/s, validationLossPerBatch=2.68]                                   
+Epoch 44/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.02]                                                  
+Epoch 44/50: 26it [00:02, 11.51it/s, validationLossPerBatch=2.68]                                   
+Epoch 45/50: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.99]                                                  
+Epoch 45/50: 26it [00:02, 11.73it/s, validationLossPerBatch=2.67]                                   
+[2025-05-23T22:53:43.330104|base.py:165] Caching best weights at epoch 45...
+Epoch 46/50: 184it [00:34,  5.31it/s, backboneFreezed=0, trainLossPerBatch=3.02]                                                  
+Epoch 46/50: 26it [00:02, 11.48it/s, validationLossPerBatch=2.66]                                   
+[2025-05-23T22:54:20.329032|base.py:165] Caching best weights at epoch 46...
+Epoch 47/50: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=3.01]                                                  
+Epoch 47/50: 26it [00:02, 11.06it/s, validationLossPerBatch=2.66]                                   
+[2025-05-23T22:54:57.468075|base.py:165] Caching best weights at epoch 47...
+Epoch 48/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.99]                                                  
+Epoch 48/50: 26it [00:02, 11.32it/s, validationLossPerBatch=2.67]                                   
+Epoch 49/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.98]                                                  
+Epoch 49/50: 26it [00:02, 11.33it/s, validationLossPerBatch=2.67]                                   
+Epoch 50/50: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.97]                                                  
+Epoch 50/50: 26it [00:02, 11.47it/s, validationLossPerBatch=2.67]       
+Epoch 51/75: 184it [00:37,  4.96it/s, backboneFreezed=0, trainLossPerBatch=3.12]                                                  
+Epoch 51/75: 26it [00:02, 10.89it/s, validationLossPerBatch=2.86]                                   
+Epoch 52/75: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=3.17]                                                  
+Epoch 52/75: 26it [00:02, 11.40it/s, validationLossPerBatch=2.78]                                   
+Epoch 53/75: 184it [00:35,  5.24it/s, backboneFreezed=0, trainLossPerBatch=3.11]                                                  
+Epoch 53/75: 26it [00:02, 11.31it/s, validationLossPerBatch=2.72]                                   
+Epoch 54/75: 184it [00:35,  5.23it/s, backboneFreezed=0, trainLossPerBatch=3.07]                                                  
+Epoch 54/75: 26it [00:02, 10.82it/s, validationLossPerBatch=2.71]                                   
+Epoch 55/75: 184it [00:35,  5.25it/s, backboneFreezed=0, trainLossPerBatch=3.1]                                                   
+Epoch 55/75: 26it [00:02, 11.25it/s, validationLossPerBatch=2.75]                                   
+Epoch 56/75: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=3.02]                                                  
+Epoch 56/75: 26it [00:02, 11.13it/s, validationLossPerBatch=2.73]                                   
+Epoch 57/75: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=3.01]                                                  
+Epoch 57/75: 26it [00:02, 11.08it/s, validationLossPerBatch=2.68]                                   
+Epoch 58/75: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=3.02]                                                  
+Epoch 58/75: 26it [00:02, 11.69it/s, validationLossPerBatch=2.67]                                   
+Epoch 59/75: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.95]                                                  
+Epoch 59/75: 26it [00:02, 11.70it/s, validationLossPerBatch=2.71]                                   
+Epoch 60/75: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.97]                                                  
+Epoch 60/75: 26it [00:02, 11.50it/s, validationLossPerBatch=2.75]                                   
+Epoch 61/75: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.93]                                                  
+Epoch 61/75: 26it [00:02, 11.26it/s, validationLossPerBatch=2.63]                                   
+[2025-05-23T23:10:44.238181|base.py:165] Caching best weights at epoch 61...
+Epoch 62/75: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.93]                                                  
+Epoch 62/75: 26it [00:02, 11.45it/s, validationLossPerBatch=2.63]                                   
+[2025-05-23T23:11:21.313053|base.py:165] Caching best weights at epoch 62...
+Epoch 63/75: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.91]                                                  
+Epoch 63/75: 26it [00:02, 11.95it/s, validationLossPerBatch=2.61]                                   
+[2025-05-23T23:11:58.276879|base.py:165] Caching best weights at epoch 63...
+Epoch 64/75: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.91]                                                  
+Epoch 64/75: 26it [00:02, 10.68it/s, validationLossPerBatch=2.63]                                   
+Epoch 65/75: 184it [00:34,  5.31it/s, backboneFreezed=0, trainLossPerBatch=2.9]                                                   
+Epoch 65/75: 26it [00:02, 11.56it/s, validationLossPerBatch=2.62]                                   
+Epoch 66/75: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.88]                                                  
+Epoch 66/75: 26it [00:02, 11.32it/s, validationLossPerBatch=2.62]                                   
+Epoch 67/75: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.88]                                                  
+Epoch 67/75: 26it [00:02, 10.74it/s, validationLossPerBatch=2.61]                                   
+[2025-05-23T23:14:27.248282|base.py:165] Caching best weights at epoch 67...
+Epoch 68/75: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.86]                                                  
+Epoch 68/75: 26it [00:02, 11.47it/s, validationLossPerBatch=2.59]                                   
+[2025-05-23T23:15:04.470652|base.py:165] Caching best weights at epoch 68...
+Epoch 69/75: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.87]                                                  
+Epoch 69/75: 26it [00:02, 11.12it/s, validationLossPerBatch=2.59]                                   
+[2025-05-23T23:15:41.728118|base.py:165] Caching best weights at epoch 69...
+Epoch 70/75: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.83]                                                  
+Epoch 70/75: 26it [00:02, 11.23it/s, validationLossPerBatch=2.59]                                   
+Epoch 71/75: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.85]                                                  
+Epoch 71/75: 26it [00:02, 11.61it/s, validationLossPerBatch=2.59]                                   
+Epoch 72/75: 184it [00:35,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.84]                                                  
+Epoch 72/75: 26it [00:02, 11.43it/s, validationLossPerBatch=2.61]                                   
+Epoch 73/75: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.82]                                                  
+Epoch 73/75: 26it [00:02, 11.54it/s, validationLossPerBatch=2.6]                                    
+Epoch 74/75: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.81]                                                  
+Epoch 74/75: 26it [00:02, 11.37it/s, validationLossPerBatch=2.59]                                   
+Epoch 75/75: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.81]                                                  
+Epoch 75/75: 26it [00:02, 10.84it/s, validationLossPerBatch=2.6]                                    
+Epoch 76/100: 184it [00:36,  5.01it/s, backboneFreezed=0, trainLossPerBatch=2.79]                                                 
+Epoch 76/100: 26it [00:02, 10.40it/s, validationLossPerBatch=2.65]                                  
+Epoch 77/100: 184it [00:35,  5.22it/s, backboneFreezed=0, trainLossPerBatch=2.81]                                                 
+Epoch 77/100: 26it [00:02, 10.90it/s, validationLossPerBatch=2.61]                                  
+Epoch 78/100: 184it [00:35,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.79]                                                 
+Epoch 78/100: 26it [00:02, 11.14it/s, validationLossPerBatch=2.6]                                   
+Epoch 79/100: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.77]                                                 
+Epoch 79/100: 26it [00:02, 11.22it/s, validationLossPerBatch=2.59]                                  
+Epoch 80/100: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.81]                                                 
+Epoch 80/100: 26it [00:02, 10.69it/s, validationLossPerBatch=2.6]                                   
+Epoch 81/100: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.77]                                                 
+Epoch 81/100: 26it [00:02, 11.58it/s, validationLossPerBatch=2.59]                                  
+Epoch 82/100: 184it [00:35,  5.25it/s, backboneFreezed=0, trainLossPerBatch=2.77]                                                 
+Epoch 82/100: 26it [00:02, 11.54it/s, validationLossPerBatch=2.58]                                  
+[2025-05-23T23:30:47.177068|base.py:165] Caching best weights at epoch 82...
+Epoch 83/100: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.79]                                                 
+Epoch 83/100: 26it [00:02, 11.47it/s, validationLossPerBatch=2.59]                                  
+Epoch 84/100: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.75]                                                 
+Epoch 84/100: 26it [00:02, 11.06it/s, validationLossPerBatch=2.61]                                  
+Epoch 85/100: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.78]                                                 
+Epoch 85/100: 26it [00:02, 11.18it/s, validationLossPerBatch=2.6]                                   
+Epoch 86/100: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.77]                                                 
+Epoch 86/100: 26it [00:02, 11.32it/s, validationLossPerBatch=2.58]                                  
+[2025-05-23T23:33:15.768311|base.py:165] Caching best weights at epoch 86...
+Epoch 87/100: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.78]                                                 
+Epoch 87/100: 26it [00:02, 10.61it/s, validationLossPerBatch=2.6]                                   
+Epoch 88/100: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.78]                                                 
+Epoch 88/100: 26it [00:02, 11.27it/s, validationLossPerBatch=2.58]                                  
+Epoch 89/100: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.8]                                                  
+Epoch 89/100: 26it [00:02, 11.70it/s, validationLossPerBatch=2.59]       
+Epoch 90/100: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.8]                                                  
+Epoch 90/100: 26it [00:02, 11.12it/s, validationLossPerBatch=2.6]                                   
+Epoch 91/100: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.79]                                                 
+Epoch 91/100: 26it [00:02, 11.66it/s, validationLossPerBatch=2.59]                                  
+Epoch 92/100: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.81]                                                 
+Epoch 92/100: 26it [00:02, 11.44it/s, validationLossPerBatch=2.59]                                  
+Epoch 93/100: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.8]                                                  
+Epoch 93/100: 26it [00:02, 11.56it/s, validationLossPerBatch=2.57]                                  
+[2025-05-23T23:37:35.987108|base.py:165] Caching best weights at epoch 93...
+Epoch 94/100: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.81]                                                 
+Epoch 94/100: 26it [00:02, 10.52it/s, validationLossPerBatch=2.57]                                  
+[2025-05-23T23:38:13.245413|base.py:165] Caching best weights at epoch 94...
+Epoch 95/100: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.78]                                                 
+Epoch 95/100: 26it [00:02, 11.65it/s, validationLossPerBatch=2.57]                                  
+Epoch 96/100: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.81]                                                 
+Epoch 96/100: 26it [00:02, 11.26it/s, validationLossPerBatch=2.57]                                  
+Epoch 97/100: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.79]                                                 
+Epoch 97/100: 26it [00:02, 10.89it/s, validationLossPerBatch=2.58]                                  
+Epoch 98/100: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.78]                                                 
+Epoch 98/100: 26it [00:02, 11.15it/s, validationLossPerBatch=2.58]                                  
+Epoch 99/100: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.76]                                                 
+Epoch 99/100: 26it [00:02, 11.22it/s, validationLossPerBatch=2.57]                                  
+[2025-05-23T23:41:19.330551|base.py:165] Caching best weights at epoch 99...
+Epoch 100/100: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.76]                                                
+Epoch 100/100: 26it [00:02, 11.11it/s, validationLossPerBatch=2.58]                                 
+Epoch 101/120: 184it [00:36,  5.08it/s, backboneFreezed=0, trainLossPerBatch=2.68]                                                
+Epoch 101/120: 26it [00:02, 11.03it/s, validationLossPerBatch=2.58]                                 
+Epoch 102/120: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.7]                                                 
+Epoch 102/120: 26it [00:02, 11.41it/s, validationLossPerBatch=2.58]                                 
+Epoch 103/120: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.7]                                                 
+Epoch 103/120: 26it [00:02, 11.10it/s, validationLossPerBatch=2.58]                                 
+Epoch 104/120: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.68]                                                
+Epoch 104/120: 26it [00:02, 11.13it/s, validationLossPerBatch=2.58]                                 
+Epoch 105/120: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.72]                                                
+Epoch 105/120: 26it [00:02, 11.02it/s, validationLossPerBatch=2.58]                                 
+Epoch 106/120: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.69]                                                
+Epoch 106/120: 26it [00:02, 11.45it/s, validationLossPerBatch=2.57]                                 
+Epoch 107/120: 184it [00:36,  5.10it/s, backboneFreezed=0, trainLossPerBatch=2.7]                                                 
+Epoch 107/120: 26it [00:02, 10.06it/s, validationLossPerBatch=2.58]                                 
+Epoch 108/120: 184it [00:35,  5.11it/s, backboneFreezed=0, trainLossPerBatch=2.72]                                                
+Epoch 108/120: 26it [00:02, 10.61it/s, validationLossPerBatch=2.59]                                 
+Epoch 109/120: 184it [00:35,  5.19it/s, backboneFreezed=0, trainLossPerBatch=2.69]                                                
+Epoch 109/120: 26it [00:02, 11.08it/s, validationLossPerBatch=2.57]                                 
+Epoch 110/120: 184it [00:35,  5.21it/s, backboneFreezed=0, trainLossPerBatch=2.73]                                                
+Epoch 110/120: 26it [00:02, 10.82it/s, validationLossPerBatch=2.58]                                 
+Epoch 111/120: 184it [00:35,  5.24it/s, backboneFreezed=0, trainLossPerBatch=2.72]                                                
+Epoch 111/120: 26it [00:02, 10.81it/s, validationLossPerBatch=2.58]                                 
+Epoch 112/120: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.74]                                                
+Epoch 112/120: 26it [00:02, 11.00it/s, validationLossPerBatch=2.59]                                 
+Epoch 113/120: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.74]                                                
+Epoch 113/120: 26it [00:02, 11.38it/s, validationLossPerBatch=2.58]                                 
+Epoch 114/120: 184it [00:34,  5.27it/s, backboneFreezed=0, trainLossPerBatch=2.76]                                                
+Epoch 114/120: 26it [00:02, 11.01it/s, validationLossPerBatch=2.59]                                 
+Epoch 115/120: 184it [00:34,  5.28it/s, backboneFreezed=0, trainLossPerBatch=2.76]                                                
+Epoch 115/120: 26it [00:02, 10.99it/s, validationLossPerBatch=2.58]                                 
+Epoch 116/120: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.76]                                                
+Epoch 116/120: 26it [00:02, 10.59it/s, validationLossPerBatch=2.58]                                 
+Epoch 117/120: 184it [00:34,  5.30it/s, backboneFreezed=0, trainLossPerBatch=2.78]                                                
+Epoch 117/120: 26it [00:02, 10.64it/s, validationLossPerBatch=2.58]                                 
+Epoch 118/120: 184it [00:34,  5.26it/s, backboneFreezed=0, trainLossPerBatch=2.78]                                                
+Epoch 118/120: 26it [00:02, 11.21it/s, validationLossPerBatch=2.58]                                 
+Epoch 119/120: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.79]                                                
+Epoch 119/120: 26it [00:02, 11.34it/s, validationLossPerBatch=2.58]                                 
+Epoch 120/120: 184it [00:34,  5.29it/s, backboneFreezed=0, trainLossPerBatch=2.76]                                                
+Epoch 120/120: 26it [00:02, 10.59it/s, validationLossPerBatch=2.58]   
+"""
 
+# 画单个图
+"""
 # 正则表达式提取epoch编号和损失
 train_pattern = re.compile(r"Epoch (\d+)/\d+: \d+it \[.*trainLossPerBatch=([\d\.]+)\]")
 val_pattern = re.compile(r"Epoch (\d+)/\d+: \d+it \[.*validationLossPerBatch=([\d\.]+)\]")
@@ -475,3 +755,53 @@ plt.legend()
 plt.grid(True)
 plt.savefig("loss_curve.png")
 print("Loss curve saved as loss_curve.png")
+"""
+def extract_losses(log_text):
+    train_pattern = re.compile(r"Epoch (\d+)/\d+: \d+it \[.*?trainLossPerBatch=([\d\.]+)\]")
+    val_pattern = re.compile(r"Epoch (\d+)/\d+: \d+it \[.*?validationLossPerBatch=([\d\.]+)\]")
+
+    train_losses = {}
+    val_losses = {}
+
+    for line in log_text.strip().splitlines():
+        train_match = train_pattern.search(line)
+        if train_match:
+            epoch = int(train_match.group(1))
+            loss = float(train_match.group(2))
+            train_losses[epoch] = loss
+        val_match = val_pattern.search(line)
+        if val_match:
+            epoch = int(val_match.group(1))
+            loss = float(val_match.group(2))
+            val_losses[epoch] = loss
+
+    return train_losses, val_losses
+
+# 提取两个日志的损失
+train_A, val_A = extract_losses(success_log_text)
+train_B, val_B = extract_losses(log_text)
+
+# 各自的 epoch 列表（只画共有的 epoch）
+epochs = sorted(set(train_A) & set(val_A) & set(train_B) & set(val_B))
+
+# 组装画图数据
+train_loss_A = [train_A[e] for e in epochs]
+val_loss_A = [val_A[e] for e in epochs]
+train_loss_B = [train_B[e] for e in epochs]
+val_loss_B = [val_B[e] for e in epochs]
+
+# 画图
+plt.figure(figsize=(10, 6))
+plt.plot(epochs, train_loss_A, 'o-', label="Train Loss Base")
+plt.plot(epochs, val_loss_A, 'o--', label="Validation Loss Base")
+plt.plot(epochs, train_loss_B, 's-', label="Train Loss Pretrain")
+plt.plot(epochs, val_loss_B, 's--', label="Validation Loss Pretrain")
+
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.title("Train and Validation Loss Comparison")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.savefig("loss_comparison.png")
+print("Loss comparison curve saved as loss_comparison.png")

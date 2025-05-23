@@ -755,6 +755,28 @@ NaN情况如下图：
 5.22日  
 ***
 
+第50轮：  
+![](pictures/33.png)  
+
+第75轮：  
+![](pictures/34.png)  
+
+可见现在已经比从0开始练好了，但是极限会是多少呢？调小学习率，继续练。  
+
+第100轮：  
+![](pictures/35.png)  
+
+感觉快到极限了，再次缩小学习率，训练最后20轮，进行fine-tune。  
+
+第120轮：  
+![](pictures/36.png)  
+
+损失全过程：  
+![](pictures/loss_curve_3.png)  
+
+与基础模型的对比：  
+![](pictures/pretrain.png)  
+
 # 三阶段：小样本增量学习
 
 需要用到师生架构，也就是说得有一个老师模型、一个按照老师模型进行训练的学生模型。  
@@ -764,4 +786,54 @@ NaN情况如下图：
 可以在**mars.py**中修改tag，例如建立老师模型时选择“*c1.nano.teacher*”，然后在对老师模型进行蒸馏获得所需学生模型时选择“*c1.nano.distillation*”。  
 
 对应的处理是在**c1.py**中，会根据tag进行不同的配置，譬如teacher只是比full模型少用了10类目标，而学生模型distillation不一样的配置就多了，包括checkoutpoint、老师模型、蒸馏损失权重等。  
+
+## 训练teacher模型&debug
+
+在**mars.py**中将模型名字改成“cfgname="c1.nano.teacher"”，然后开始训练。  
+
+在训练途中，出现神秘报错信息：  
+![](pictures/37.png)  
+
+似乎是因为作为索引的*fg_mask*变量不是一个布尔变量，作为索引出错。  
+
+但是追溯到产生*fg_mask*的函数，其在输出时，`return target_labels, target_bboxes, target_scores, fg_mask.bool(), target_gt_idx`明明已经经过强制的类型转换，可是后面这个报错就令人困惑。  
+
+也许是哪里的偶发现象？再次运行，并没有提示，先略过吧。  
+
+继续运行中，间隔20多个epoch后，又再一次出现这个报错，说明是哪里有不可避免的问题，但是不好捕捉，于是在**loss.py**中加上一个捕捉信息：  
+```
+if fg_mask.dtype != torch.bool:
+            print(fg_mask.dtype)
+            import pdb; pdb.set_trace()  
+```
+再跑，准备捕捉。  
+
+再次捕捉到，输出类型为**torch.float32**，其他信息为：  
+![](pictures/38.png)  
+似乎是因为都是0，导致转换时候并没有转换成功。  
+
+再分析一下，这整个链条就清晰了：  
++ teacher只用了10个类别，而原类别共有20类  
++ 当训练过程中，某一次训练中一个样本完全没有base的十个类别时，会导致GT分配时没有正样本而直接筛掉，进而产生一个全为False的fg_mask  
++ 这个mask在类型转换时就会产生错误，最后无法作为索引。  
+
+根据gpt的推荐，这种情况应该直接返回一个0作为这一轮的损失。  
+至于为什么是0，是因为一张图片没有正样本，那么就没有也不需要学习任何的特征，而0这个值在损失的传播中是一个中性的，不会对模型产生影响。  
+
+更具体的，在算出来*fg_mask*后，增加一个分支：  
+```
+if fg_mask.sum() == 0:
+	print('\n JUMP dummy! \n')
+    return predClassScores.sum() * 0.0  # 仍在计算图上
+```
+
+这里用predClassScores是因为其还可以在计算图上保留梯度更新信息。  
+
+teacher模型训练100轮后的效果如下：  
+![](pictures/39.png)  
+
+只能说是有点堪忧，需要再多跑一些。明天继续。  
+
+5月23日  
+***  
 
