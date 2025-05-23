@@ -114,12 +114,12 @@ class DetectionLoss(object):
 
         # 辛苦debug得到的，必要的数据处理！
         pd_bboxes = bboxDecode(self.model.anchorPoints, predBoxDistribution, self.model.proj, False)
-        pd_scores = predClassScores.detach().sigmoid()
+        pd_scores = predClassScores.detach().sigmoid() # detach()
         
         target_labels, target_bboxes, target_scores, fg_mask, target_gt_idx = self.assigner.forward(
             pd_scores, 
-            (pd_bboxes.detach() * self.model.anchorStrides).type(gtBboxes.dtype),
-            self.model.anchorPoints * self.model.anchorStrides,
+            (pd_bboxes.detach() * self.model.anchorStrides).type(gtBboxes.dtype), # detach(), anchorStrides
+            self.model.anchorPoints * self.model.anchorStrides, # anchorStrides
             gtLabels, 
             gtBboxes, 
             gtMask
@@ -131,14 +131,14 @@ class DetectionLoss(object):
         #loss[1] = (loss_cls * fg_mask.float()).sum() / (fg_mask.sum().clamp(min = 1))
         loss[1] = self.bce(predClassScores, target_scores.to(predClassScores.dtype)).sum() / max(target_scores.sum(), 1)
 
-        target_bboxes /= self.model.anchorStrides
+        target_bboxes /= self.model.anchorStrides # /=
         loss[0], loss[2] = self.bboxLoss.forward(
             predBoxDistribution, 
             pd_bboxes, 
             self.model.anchorPoints, 
             target_bboxes, 
             target_scores, 
-            max(target_scores.sum(), 1), 
+            max(target_scores.sum(), 1),  # max(xxx, 1)
             fg_mask
         )
         
