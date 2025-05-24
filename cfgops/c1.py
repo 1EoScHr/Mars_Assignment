@@ -29,7 +29,7 @@ def mcfg(tags):
     
     # 第一阶段
     """"""
-    mcfg.baseLearningRate = 1e-2
+    mcfg.baseLearningRate = 7e-3
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.9
     mcfg.optimizerWeightDecay = 5e-4
@@ -44,11 +44,11 @@ def mcfg(tags):
     """
      # 第三阶段
     """
-    mcfg.baseLearningRate = 1e-3
+    mcfg.baseLearningRate = 1e-4
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.937
     mcfg.optimizerWeightDecay = 5e-4
-    mcfg.startEpoch = 101
+    mcfg.startEpoch = 151
     """
 
     if "full" in tags:
@@ -58,14 +58,14 @@ def mcfg(tags):
 
     if "teacher" in tags:
         mcfg.modelName = "base"
-        mcfg.maxEpoch = 100
+        mcfg.maxEpoch = 150
         mcfg.backboneFreezeEpochs = [x for x in range(0, 5)]
         mcfg.trainSelectedClasses = ["A{}".format(x) for x in range(1, 11)] # DO NOT MODIFY
 
     if "distillation" in tags:
         mcfg.modelName = "distillation"
-        mcfg.checkpointModelFile = "/auto/mars/ame/c1.nano.teacher/__cache__/best_weights.pth"
-        mcfg.teacherModelFile = "/auto/mars/ame/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.checkpointModelFile = "../Mars_Assignment_Running/liuzt/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.teacherModelFile = "../Mars_Assignment_Running/liuzt/c1.nano.teacher/__cache__/best_weights.pth"
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
         mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]

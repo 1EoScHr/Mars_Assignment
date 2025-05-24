@@ -6,10 +6,10 @@ class DistillationDetectionLoss(object):
     def __init__(self, mcfg, model):
         self.mcfg = mcfg
         self.histMode = False
-        # self.detectionLoss = DetectionLoss(mcfg, model)
-        # self.cwdLoss = CWDLoss(self.mcfg.device)
-        # self.respLoss = ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes)
-        raise NotImplementedError("DistillationDetectionLoss::__init__")
+        self.detectionLoss = DetectionLoss(mcfg, model)
+        self.cwdLoss = CWDLoss(self.mcfg.device)
+        self.respLoss = ResponseLoss(self.mcfg.device, self.mcfg.nc, self.mcfg.teacherClassIndexes)
+        # raise NotImplementedError("DistillationDetectionLoss::__init__")
 
     @override
     def __call__(self, rawPreds, batch):

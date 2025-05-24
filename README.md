@@ -837,3 +837,33 @@ teacher模型训练100轮后的效果如下：
 5月23日  
 ***  
 
+继续训练到150轮，结果如下：  
+![](pictures/40.png)  
+这个倒是还可以。  
+
+## 学生模型训练
+
+然后开始准备训练学生模型，相关函数也还没有编写，但是依旧是一边跑一边补全代码的思路。  
+在**mars.py**中改为`cfgname="c1.nano.distillation"`就可以了。  
+
+运行，查看报错：  
+```
+from overrides import override # this could be removed since Python 3.12
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'overrides'
+```  
+
+这个地方在阅读代码的时候就见过，运行时果然出错，查询：  
+> @override 装饰器的作用是告诉开发者和编辑器“这个方法是重写父类的”  
+> 从 Python 3.12 开始，@override 装饰器被内置进了标准库 typing 模块中  
+
+但是似乎直接注释掉对代码的运行也不会有影响，或者装上这个包，都无所谓。  
+
+再次运行，提示找不到模型文件，正常，因为没有修改。  
+在**c1.py**中的distillation部分修改路径，再次运行，遇到了未编译错误，定位到对应文件：train/distilloss.py中。  
+
+发现报错信息行上方有三行被注释，定义了三个成员，分别是三个函数：DetectionLoss、CWDLos、ResponseLoss，根据手册以及相关文章，三个分别是计算student模型相对于GT损失、feature-based算法中的channel-wise蒸馏损失、response-based算法中的KLDivergence损失。  
+
+今日到此结束  
+5.24日  
+***  
