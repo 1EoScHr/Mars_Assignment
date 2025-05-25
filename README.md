@@ -841,7 +841,9 @@ teacher模型训练100轮后的效果如下：
 ![](pictures/40.png)  
 这个倒是还可以。  
 
-## 学生模型训练
+## 学生模型
+
+### 代码补全
 
 然后开始准备训练学生模型，相关函数也还没有编写，但是依旧是一边跑一边补全代码的思路。  
 在**mars.py**中改为`cfgname="c1.nano.distillation"`就可以了。  
@@ -862,8 +864,68 @@ ModuleNotFoundError: No module named 'overrides'
 再次运行，提示找不到模型文件，正常，因为没有修改。  
 在**c1.py**中的distillation部分修改路径，再次运行，遇到了未编译错误，定位到对应文件：train/distilloss.py中。  
 
-发现报错信息行上方有三行被注释，定义了三个成员，分别是三个函数：DetectionLoss、CWDLos、ResponseLoss，根据手册以及相关文章，三个分别是计算student模型相对于GT损失、feature-based算法中的channel-wise蒸馏损失、response-based算法中的KLDivergence损失。  
+发现报错信息行上方有三行被注释，定义了三个成员，分别是三个函数：DetectionLoss、CWDLoss、ResponseLoss，根据手册以及相关文章，三个分别是计算student模型相对于GT损失、feature-based算法中的channel-wise蒸馏损失、response-based算法中的KLDivergence损失。  
 
 今日到此结束  
 5.24日  
+***  
+
+今天发现ddl后延了，真好。  
+
+总结这三种:  
+第一种实际上就是之前训练模型所用的Detectionloss，那么直接从**loss.py**导入就行；
+第二种CWDLoss是个未知的算法，需要到给的arxiv中仔细研究；  
+第三种实际就是一个KL散度的实现，正好之前在研究softmax时有学习过，在[这部分笔记](https://github.com/1EoScHr/myCS_notes/blob/main/DL4CV%3A%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89%E4%B8%AD%E7%9A%84%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0.md#cross-entropy-loss--multinomial-logistic-regression-%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1%E5%A4%9A%E5%85%83%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92)。  
+
+在arxiv中找到了CWDLoss的[github代码](https://github.com/irfanICMLL/TorchDistiller/blob/main/SemSeg-distill/utils/criterion.py)，其内部实现了包括CWD蒸馏等的好多种方法。所以这里为了保险。调用的是这个版本，对其做了一些无脑的改造，也就是将里面一些可以拓展的自选项都裁剪成了一种，譬如bce与kl只用kl、多种norm只用channel-norm。  
+
+KL散度的自己实现还有不少需要注意的地方，不光是定义一个只有`torch.nn.KLDivLoss()`的类就行。  
++ 首先最重要的是不能直接用pred_S和pred_T这两个分布，虽然KL散度的定义是如此，但是接口要求学生模型的输入是Softmax+log的，老师模型作为target是要Softmax的。  
++ 然后是许多细节，比如KL散度的输出模式、温度平滑在softmax前进行、老师模型的参数要detach()以防影响、两种的温度要适配、两种选择了sum后归一化的方式也要一致。  
+
+此外，还发现给出的框架的三种损失，response还有一个参数是teacher的类别，那为什么另外两种不呢，分析一下，真妙：  
++ 在这个蒸馏学习中，任务是训练一个student模型，能从一个能分辨出10类的teacher模型中蒸馏出知识、在20类中也有不错表现。  
++ 损失是三类结合，分别是GT损失、CWD损失、DL损失  
++ GT损失就是student的结果与真实标签之间的损失，肯定是建立在整个数据集上20类的，所以不用强调teacher的10类
++ CWD损失是feature-Based，是基于“过程”的，也就是student学习的是teacher如何处理输入，与最后分类结果无关  
++ DL损失是response-Based，是基于分类结果的，也就是要让student最后的预测分布要与teacher尽量相近，因此需要强调teacher的有限  
+
+道理如此，如何才能实现在kl损失中只聚焦前10类？  
+查询了一下，很简单，就裁剪前10类，后面不算就行。  
+具体的，用
+```
+pred_S = pred_S[:, self.class_indexes, :, :]
+pred_T = pred_T[:, self.class_indexes, :, :]
+```
+切片即可。  
+
+这样就基本完成了。  
+
+### 运行
+
+然后运行，我采取的训练策略是5轮冻结主干、然后逐渐放大学习率。  
+同时也注意到给定的默认权重`mcfg.distilLossWeights = (1.0, 0.05, 0.001)`有点不太合适，感觉不能体现出“蒸馏”的作用。  
+于是计划使用“(1.0, 0.2, 0.01)”这个权重看看效果。  
+
+这之中还有debug的过程，因为之前看的这些资料等，都是将输入看作是一份预测，但是实际的输入是好多份预测，所以还要分开、分别来。  
+
+同时在response中进行切片也有一个bug，在C这个维度上还要进行尺度考虑，综合考虑上regmax。所以要按一定的规律重排。  
+
+
+运行起来速度十分的快，得益于模型是“small”。  
+在75轮后的效果：  
+![](pictures/41.png)  
+
+在150轮时的效果：  
+![](pictures/42.png)  
+可以发现已经比手册中的效果（57.5）好了。  
+
+### bonus
+
+可以用其他的蒸馏方法？  
+但是先空着吧  
+
+现在基础的工作已经都完成了！  
+
+5.25  
 ***  

@@ -28,20 +28,22 @@ def mcfg(tags):
     #mcfg.paintImages = True
     
     # 第一阶段
-    """"""
-    mcfg.baseLearningRate = 7e-3
+    """
+    mcfg.baseLearningRate = 1e-2
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.9
     mcfg.optimizerWeightDecay = 5e-4
     
     # 第二阶段
     """
+    
+    
+    
     mcfg.baseLearningRate = 3e-3
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.937
     mcfg.optimizerWeightDecay = 5e-4
     mcfg.startEpoch = 24
-    """
      # 第三阶段
     """
     mcfg.baseLearningRate = 1e-4
@@ -66,11 +68,13 @@ def mcfg(tags):
         mcfg.modelName = "distillation"
         mcfg.checkpointModelFile = "../Mars_Assignment_Running/liuzt/c1.nano.teacher/__cache__/best_weights.pth"
         mcfg.teacherModelFile = "../Mars_Assignment_Running/liuzt/c1.nano.teacher/__cache__/best_weights.pth"
-        mcfg.distilLossWeights = (1.0, 0.05, 0.001)
-        mcfg.maxEpoch = 100
-        mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]
+        mcfg.distilLossWeights = (1.0, 0.1, 0.05)#(1.0, 0.05, 0.001)
+        mcfg.maxEpoch = 150
+        mcfg.backboneFreezeEpochs = [x for x in range(0, 5)]
         mcfg.epochValidation = False # DO NOT MODIFY
         mcfg.trainSplitName = "small" # DO NOT MODIFY
         mcfg.teacherClassIndexes = [x for x in range(0, 10)] # DO NOT MODIFY
+
+        mcfg.temperature = 2.0 # 自定义的温度
 
     return mcfg
