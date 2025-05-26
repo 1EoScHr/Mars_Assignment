@@ -920,7 +920,7 @@ pred_T = pred_T[:, self.class_indexes, :, :]
 ![](pictures/42.png)  
 可以发现已经比手册中的效果（57.5）好了。  
 
-### bonus
+# bonus
 
 可以用其他的蒸馏方法？  
 但是先空着吧  
@@ -929,3 +929,30 @@ pred_T = pred_T[:, self.class_indexes, :, :]
 
 5.25  
 ***  
+
+## swin-transformer
+
+### 简单了解
+
+首先要对这个技术有一个大概的认识。  
+在网上找到了[这篇文章](https://datawhalechina.github.io/thorough-pytorch/%E7%AC%AC%E5%8D%81%E7%AB%A0/Swin-Transformer%E8%A7%A3%E8%AF%BB.html)还有[另一篇文章](https://blog.csdn.net/weixin_62371528/article/details/136055900)，对swin-transformer有了一个认识。  
+
+顾名思义，swin transformer是对transformer的一个改进。  
+transformer是一种基于文字上的“序列到序列”任务所开发的，所以作为自然语言领域的技术，其直接应用在CV是有些“水土不服”。  
+
+其主要解决了transformer在CV任务上的两个问题：  
+> 视觉实体方差大，也就是同样的一个物体，拍摄角度不同，图片就有很大差异，导致效果不好  
+> 像素的数量多，自注意力计算量会与像素的平方成正比  
+
+### 代码与步骤
+
+看完基本介绍后就什么都看不懂了。  
+所以还是从代码出发，按照顺序将所需的模块搭建起来再说。  
+
+#### Patch Embedding
+
+图片输入后首先通过这一层，被切割为几个patch，然后输出成embedding。  
+
+5.26  
+***
+
