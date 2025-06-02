@@ -4,6 +4,7 @@ import torch.nn as nn
 from misc.log import log
 from misc.bbox import makeAnchors
 from model.base.backbone import Backbone
+from model.base.swin_transformer import SwinTransformer
 from model.base.neck import Neck
 from model.base.head import DetectHead
 
@@ -47,7 +48,10 @@ class YoloModel(nn.Module):
 
         # model layes
         w, r, n = YoloModelPhaseSetup.getModelWRN(mcfg.phase)
-        self.backbone = Backbone(w, r, n)
+        if self.mcfg.backbone == "backbone":
+            self.backbone = Backbone(w, r, n)
+        elif self.mcfg.backbone == "swintransformer":
+            self.backbone = SwinTransformer(img_size=640, num_classes=0, window_size=10, embed_dim=32)
         self.neck = Neck(w, r, n)
         self.head = DetectHead(w, r, self.mcfg.nc, self.mcfg.regMax)
 

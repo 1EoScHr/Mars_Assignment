@@ -24,26 +24,24 @@ def mcfg(tags):
         "small": "../Mars_Assignment_Running/mar20/splits/v5/small.txt",
     }
 
-    # debug引入更改
-    #mcfg.paintImages = True
+    # 以下是在debug过程中引入的更改
+    #mcfg.paintImages = True # 绘制最后识别效果，用于直观评估模型性能
+    mcfg.backbone_type = "swintransformer" # 使用backbone还是swintransformer
     
     # 第一阶段
-    """
+    """ """
     mcfg.baseLearningRate = 1e-2
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.9
     mcfg.optimizerWeightDecay = 5e-4
-    
+   
     # 第二阶段
     """
-    
-    
-    
     mcfg.baseLearningRate = 3e-3
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.937
     mcfg.optimizerWeightDecay = 5e-4
-    mcfg.startEpoch = 24
+    mcfg.startEpoch = 24"""
      # 第三阶段
     """
     mcfg.baseLearningRate = 1e-4
