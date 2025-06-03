@@ -70,6 +70,7 @@ class ModelConfig(object):
         self.nc = None
 
         self.backbone_type = "backbone"
+        self.schedulerType = "default"
 
     def enrichTags(self, tags):
         for tag in tags:

@@ -8,6 +8,7 @@ from factory.modelfactory import MarsModelFactory
 from train.opt import MarsOptimizerFactory
 from train.sched import MarsLearningRateSchedulerFactory
 from engine.ema import ModelEMA
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 class MarsBaseTrainer(object):
@@ -146,16 +147,30 @@ class MarsBaseTrainer(object):
         if startEpoch >= self.mcfg.maxEpoch:
             log.inf("Training skipped")
             return
-
+        
         loss = self.initLoss(model)
-        opt = self.initOptimizer(model)
-        scheduler = self.initScheduler(opt)
+        opt = self.initOptimizer(model)  
+        
+        if self.mcfg.schedulerType == "plateau":
+            scheduler = ReduceLROnPlateau( # ReduceLROnPlateau 策略
+            opt,
+            mode="min",
+            factor=0.5,
+            patience=5, # 连续5轮不降低，学习率减小一半
+            verbose=True,
+            min_lr=1e-6
+        )
+        else:
+            scheduler = self.initScheduler(opt) # 默认cos+warmup策略
+        
         trainLoader = self.initTrainDataLoader()
         validationLoader = self.initValidationDataLoader()
 
         for epoch in range(startEpoch, self.mcfg.maxEpoch):
             self.preEpochSetup(model, epoch)
-            scheduler.updateLearningRate(epoch)
+            if not isinstance(scheduler, ReduceLROnPlateau):
+                scheduler.updateLearningRate(epoch)
+
             trainLoss = self.fitOneEpoch(
                 model=model,
                 loss=loss,
@@ -171,6 +186,10 @@ class MarsBaseTrainer(object):
                 dataLoader=validationLoader,
                 epoch=epoch,
             )
+
+            if isinstance(scheduler, ReduceLROnPlateau):
+                scheduler.step(validationLoss)
+
             self.epochSave(epoch, eval_model, trainLoss, validationLoss)
 
         log.inf("Mars trainer finished with max epoch at {}".format(self.mcfg.maxEpoch))
