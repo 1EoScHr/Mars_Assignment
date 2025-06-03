@@ -126,11 +126,12 @@ class DetectionLoss(object):
         )
 
         # 预防在teacher训练时出现全False导致报错
-        """"""
+        """
         if fg_mask.sum() == 0:
             print('\n JUMP dummy! \n')
             return predClassScores.sum() * 0.0  # 仍在计算图上
-        
+        """
+
         # 为了修正，这里选用官方实现
         #loss_cls = self.bce(predClassScores, target_scores)
         #loss_cls = loss_cls.sum(-1) # 在最后一个维度，也就是每一个锚点的每一类上求和

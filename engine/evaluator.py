@@ -20,16 +20,21 @@ class ImageEvaluationEntry(object):
 
 
 class MarsEvaluator(object):
-    def __init__(self, mcfg):
+    def __init__(self, mcfg, model=None):
         self.mcfg = mcfg
         self.evalDir = self.mcfg.evalDir()
+        self.externalModel = model # ema新增
 
     def initDataLoader(self):
         return VocDataset.getDataLoader(mcfg=self.mcfg, splitName=self.mcfg.testSplitName, isTest=True, fullInfo=True, selectedClasses=self.mcfg.testSelectedClasses)
 
     def initPredictor(self):
-        modelFile = self.mcfg.modelSavePath()
-        model = MarsModelFactory.loadPretrainedModel(self.mcfg, modelFile)
+        if self.externalModel is not None: # ema引入
+            model = self.externalModel
+            log.yellow("Using external model for evaluation (e.g., EMA).")
+        else:
+            modelFile = self.mcfg.modelSavePath()
+            model = MarsModelFactory.loadPretrainedModel(self.mcfg, modelFile)
         return DetectionPredictor(self.mcfg, model)
 
     def run(self):

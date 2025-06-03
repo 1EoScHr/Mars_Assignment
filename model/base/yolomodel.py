@@ -48,10 +48,10 @@ class YoloModel(nn.Module):
 
         # model layes
         w, r, n = YoloModelPhaseSetup.getModelWRN(mcfg.phase)
-        if self.mcfg.backbone == "backbone":
+        if self.mcfg.backbone_type == "backbone":
             self.backbone = Backbone(w, r, n)
-        elif self.mcfg.backbone == "swintransformer":
-            self.backbone = SwinTransformer(img_size=640, num_classes=0, window_size=10, embed_dim=32)
+        elif self.mcfg.backbone_type == "swintransformer":
+            self.backbone = SwinTransformer(img_size=640, patch_size=4, num_classes=0, window_size=20)
         self.neck = Neck(w, r, n)
         self.head = DetectHead(w, r, self.mcfg.nc, self.mcfg.regMax)
 

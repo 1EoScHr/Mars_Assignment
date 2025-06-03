@@ -8,8 +8,8 @@
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as checkpoint
-from timm.models.layers import DropPath, to_2tuple, trunc_normal_
-
+# from timm.models.layers import DropPath, to_2tuple, trunc_normal_
+from timm.layers import DropPath, to_2tuple, trunc_normal_
 try:
     import os, sys
 
@@ -525,6 +525,14 @@ class SwinTransformer(nn.Module):
         self.num_features = int(embed_dim * 2 ** (self.num_layers - 1))
         self.mlp_ratio = mlp_ratio
 
+        # 自添加的降维层
+        self.out_convs = nn.ModuleList([
+            nn.Conv2d(96, 32, 1),    # feat0
+            nn.Conv2d(192, 64, 1),   # feat1
+            nn.Conv2d(384, 128, 1),  # feat2
+            nn.Conv2d(768, 256, 1),  # feat3
+        ])
+
         # split image into non-overlapping patches
         self.patch_embed = PatchEmbed(
             img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
@@ -591,24 +599,28 @@ class SwinTransformer(nn.Module):
             x = x + self.absolute_pos_embed
         x = self.pos_drop(x)
 
-        features = []
-        for layer in self.layers:
-            x = layer(x)  # 每个layer处理后输出的特征
-            features.append(x)
+        B, L, C = x.shape
+        H = W = self.patches_resolution[0] 
+        feat0 = x.transpose(1, 2).contiguous().view(B, C, H, W)  # -> [B, C, H, W]
+        feat0 = self.out_convs[0](feat0)  # [B, 128*w, 160, 160]
 
-        # 每个features[i]形状都是 B, L, C，需要reshape成(B, C, H, W)
-        # 其中L = H*W是当前stage的patch数
-        B, L, C = features[0].shape
-        H, W = self.patches_resolution
-        outputs = []
-        for i, feat in enumerate(features):
-            # 随stage下采样，patch数量减小
-            scale = 2 ** i
-            h, w = H // scale, W // scale
-            feat = feat.transpose(1, 2).contiguous().view(B, C, h, w)
-            outputs.append(feat)
+        feats = [feat0]
 
-        return outputs  # 返回一个list，里面是4个特征层
+        for i, layer in enumerate(self.layers):
+            if i == 3:
+                break # 第四层不需要
+
+            x = layer(x)  # layer输出的特征是B, L, C，需要reshape成(B, C, H, W)
+            H //= 2
+            W //= 2
+            B, L, C = x.shape
+            # import pdb; pdb.set_trace()
+            # assert H * W == L, f"Reshape error: expected H×W={H}×{W}={H*W}, but got L={L}"
+            feat = x.transpose(1, 2).contiguous().view(B, C, H, W)  # -> [B, C, H, W]
+            feat = self.out_convs[i + 1](feat)  # out_convs[1], [2], [3]
+            feats.append(feat)
+
+        return feats  # 返回所需的feat
 
     def forward(self, x):
         features = self.forward_features(x)

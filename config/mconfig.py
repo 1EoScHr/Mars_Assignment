@@ -54,6 +54,7 @@ class ModelConfig(object):
         self.testSelectedClasses = None
         self.minIou = 0.5
         self.paintImages = None
+        self.useEMA = False  # 用于控制是否启用EMA
 
         # dataset splits
         self.trainSplitName = "train"
@@ -67,6 +68,8 @@ class ModelConfig(object):
         self.cfgname = None
         self.nobuf = False
         self.nc = None
+
+        self.backbone_type = "backbone"
 
     def enrichTags(self, tags):
         for tag in tags:

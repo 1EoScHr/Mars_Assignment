@@ -28,6 +28,14 @@ class MarsEngine(object):
 
     def runEvaluation(self):
         evaluator = MarsEvaluator(self.mcfg)
+        
+        trainer = MarsTrainerFactory.loadTrainer(self.mcfg)
+        # 尝试从 Trainer 中获取 EMA 模型
+        model_for_eval = None
+        if hasattr(trainer, "getEMAModel"):
+            model_for_eval = trainer.getEMAModel()
+            evaluator = MarsEvaluator(self.mcfg, model=model_for_eval)
+        
         evalDf = evaluator.run()
         self.view(evalDf)
 

@@ -998,3 +998,50 @@ transformer是一种基于文字上的“序列到序列”任务所开发的，
 6.2  
 
 ***
+
+跑了一下，果然报错，想要与原来的输出形状相同，对参数的修改还不少。  
+对参数再次进行一些修改，这样能够保持96不变，但是最后输出的维度数有问题：  
+![](pictures/46.png)  
+
+所以要在forward_feature上加一个维度变换来符合需要。  
+
+再次进行漫长的debug，能成功跑起来了，但是速度有点慢，原因在警告里也有出现：  
+"[Warning] Fused window process have not been installed."  
+
+原因是没有安装fused CUDA kernel，是专门加速swin-transformer的CUDA模块，所以是在CPU上进行的。  
+
+转到swintransformer库的kernel中，运行setup.py来安装。但是又报错，显示没有找到CUDA变量，一番研究才发现是因为电脑没有装CUDA的包，只是在需要的时候安装，因此没有一个完整的环境。  
+
+所以`sudo apt install nvidia-cuda-toolkit`来完整的安装一下。  
+
+安装完成后再次尝试setup，结果依然不行，显示目前的CUDA版本与pytorch用的版本不同，因此需要更改。GPT推荐我重装torch。  
+
+使用`pip uninstall torch torchvision torchaudio -y
+pip install torch==2.1.0+cu118   torchvision==0.16.0+cu118 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118`来指定安装对应版本的torch工具链。  
+
+安装完成后，执行setup.py，终于完成了安装。  
+
+再次运行，这次提示numpy的版本也错了，继续重装，终于能够运行了。  
+
+### 运行感受
+
+首先感觉很慢，使用backbone基本20秒就可以跑完一轮，但是使用swin-transformer就几乎要两分钟。  
+
+运行中，显存爆了一次：
+“torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.83 GiB. GPU 0 has a total capacty of 7.75 GiB of which 296.25 MiB is free. Including non-PyTorch memory, this process has 7.38 GiB memory in use. Of the allocated memory 6.27 GiB is allocated by PyTorch, and 997.03 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF”  
+
+搜索原因可知，swin-transformer十分吃显存，因此解决方法就是降低BatchSize，从16降为8，应该可以解决问题。  
+
+降低后，却再次在几乎第六轮的时候又爆了，所以可能不是显存大小的问题，而是在每一轮完成后没有释放被占用的显存。  
+
+## 模型ema更新
+
+直接应用代码，但是做了一些修改，将update部分放在训练的每一个step上。  
+
+最后的效果：  
+![](pictures/47.png)  
+
+训练中的损失曲线：  
+![](pictures/ema.png)  
+
+可以看出，在前期ema下降的很快，并且训练集、验证集的损失也十分均匀，能够体现“滑动平均”的效果。  

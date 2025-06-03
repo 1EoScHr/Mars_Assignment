@@ -26,22 +26,21 @@ def mcfg(tags):
 
     # 以下是在debug过程中引入的更改
     #mcfg.paintImages = True # 绘制最后识别效果，用于直观评估模型性能
-    mcfg.backbone_type = "swintransformer" # 使用backbone还是swintransformer
+    #mcfg.backbone_type = "swintransformer" # 使用backbone还是swintransformer
     
     # 第一阶段
-    """ """
+    """
     mcfg.baseLearningRate = 1e-2
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.9
     mcfg.optimizerWeightDecay = 5e-4
-   
-    # 第二阶段
     """
-    mcfg.baseLearningRate = 3e-3
+    # 第二阶段
+    """"""
+    mcfg.baseLearningRate = 1e-3 # 3e-3
     mcfg.minLearningRate = mcfg.baseLearningRate * 0.01
     mcfg.optimizerMomentum = 0.937
     mcfg.optimizerWeightDecay = 5e-4
-    mcfg.startEpoch = 24"""
      # 第三阶段
     """
     mcfg.baseLearningRate = 1e-4
@@ -51,9 +50,12 @@ def mcfg(tags):
     mcfg.startEpoch = 151
     """
 
+    if "ema" in tags:
+        mcfg.useEMA = True
+
     if "full" in tags:
         mcfg.modelName = "base"
-        mcfg.maxEpoch = 120
+        mcfg.maxEpoch = 150
         mcfg.backboneFreezeEpochs = [x for x in range(0, 5)]
 
     if "teacher" in tags:

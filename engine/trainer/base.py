@@ -7,6 +7,7 @@ from dl.vocdataset import VocDataset
 from factory.modelfactory import MarsModelFactory
 from train.opt import MarsOptimizerFactory
 from train.sched import MarsLearningRateSchedulerFactory
+from engine.ema import ModelEMA
 
 
 class MarsBaseTrainer(object):
@@ -23,6 +24,7 @@ class MarsBaseTrainer(object):
         if self.mcfg.epochValidation:
             self.checkpointFiles.append(self.bestCacheFile)
         self.backboneFreezed = False
+        self.ema_model = None
 
     def initTrainDataLoader(self):
         return VocDataset.getDataLoader(mcfg=self.mcfg, splitName=self.mcfg.trainSplitName, isTest=False, fullInfo=False, selectedClasses=self.mcfg.trainSelectedClasses)
@@ -92,13 +94,21 @@ class MarsBaseTrainer(object):
             stepLoss = loss(output, labels)
             stepLoss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10.0)
-            optimizer.step()
+            optimizer.step()    
+
+            if self.mcfg.useEMA: # 每个step进行一次ema更新
+                self.ema_model.update(model)
 
             trainLoss += stepLoss.item()
             progressBar.set_postfix(trainLossPerBatch=trainLoss / (batchIndex + 1), backboneFreezed=self.backboneFreezed)
             progressBar.update(1)
 
         progressBar.close()
+
+        # 验证是否是因为内存分配不足
+        # print(f"已分配: {torch.cuda.memory_allocated() / 1024**2:.2f} MiB")
+        # print(f"已缓存: {torch.cuda.memory_reserved() / 1024**2:.2f} MiB")
+
         return trainLoss
 
     def epochValidation(self, model, loss, dataLoader, epoch):
@@ -129,6 +139,10 @@ class MarsBaseTrainer(object):
         log.cyan("Mars trainer running...")
 
         model, startEpoch = self.initModel()
+
+        if self.mcfg.useEMA:
+            self.ema_model = ModelEMA(model, decay=0.99)
+
         if startEpoch >= self.mcfg.maxEpoch:
             log.inf("Training skipped")
             return
@@ -149,13 +163,15 @@ class MarsBaseTrainer(object):
                 optimizer=opt,
                 epoch=epoch,
             )
+
+            eval_model = self.ema_model.ema if self.mcfg.useEMA else model
             validationLoss = self.epochValidation(
-                model=model,
+                model=eval_model,
                 loss=loss,
                 dataLoader=validationLoader,
                 epoch=epoch,
             )
-            self.epochSave(epoch, model, trainLoss, validationLoss)
+            self.epochSave(epoch, eval_model, trainLoss, validationLoss)
 
         log.inf("Mars trainer finished with max epoch at {}".format(self.mcfg.maxEpoch))
 
@@ -171,6 +187,9 @@ class MarsBaseTrainer(object):
             f.write("validation_loss={}\n".format(validationLoss))
             f.write("best_loss_epoch={}\n".format(epoch + 1))
             f.write("best_loss={}\n".format(self.bestLoss))
+
+    def getEMAModel(self):
+        return self.ema_model.ema if self.ema_model is not None else None
 
 
 def getTrainer(mcfg):
